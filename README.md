@@ -1,70 +1,63 @@
-# Getting Started with Create React App
+# 仓储可视化管理系统
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## 简介
 
-## Available Scripts
+这是一个基于 React 和 ECharts (或纯 CSS) 开发的仓储可视化管理系统，旨在提供对仓库货架和库存的直观展示和管理。  系统通过图形化的方式呈现仓库平面图，用户可以通过点击货架查看物品信息，实现对仓储状态的有效监控和管理。
 
-In the project directory, you can run:
+## 核心功能
 
-### `npm start`
+*   **仓库平面图展示:**
+    *   可视化仓库平面图，包括货架、通道、门等元素。
+    *   货架的位置和大小根据实际仓库布局进行设置。
+    *   支持多个仓库的管理。
+*   **货架及库位信息:**
+    *   点击货架，查看货架的名称。
+    *   显示货架的库位布局。
+*   **库存信息展示:**
+    *   展示每个库位上的物品信息（名称、数量、图片）。
+    *   动态更新库存数据 (支持实时更新或定时刷新)。
+*   **用户交互:**
+    *   货架点击事件，查看详细信息。
+    *   [未来功能]  搜索物品。
+    *   [未来功能]  筛选物品类型。
+    *   [未来功能]  报警机制。
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## 技术栈
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+*   **前端:**
+    *   React
+    *   ECharts (用于绘制平面图及数据展示，或者纯 CSS)
+    *   Ant Design (antd) (可选, 用于 UI 组件) / 其他 UI 组件库
+    *   Sass (SCSS) (用于样式管理) / 其他 CSS 解决方案
+    *   Axios (用于 API 请求) / Fetch API
+    *   TypeScript (用于代码类型检查)
+*   **后端:**  (示例 - 替换为你实际的技术栈)
+    *   Node.js / Python / Java (或其他)
+    *   Express / Flask / Spring Boot (或其他后端框架)
+    *   MySQL / PostgreSQL (或其他数据库)
+*   **构建工具:** Webpack / Parcel / Vite
 
-### `npm test`
+## 安装与运行
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+1.  **克隆仓库:**
+    ```bash
+    git clone [your_repository_url]
+    cd [your_project_directory]
+    ```
 
-### `npm run build`
+2.  **安装依赖:**
+    ```bash
+    npm install  # 或者 yarn install,  pnpm install
+    ```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+3.  **配置后端 API (如果需要):**
+    
+*   [请在此处添加关于配置后端 API 的说明，例如，设置 API 地址、端口等]
+    
+4.  **运行前端:**
+    
+    ```bash
+    npm start  # 或者 yarn start, pnpm start
+    ```
+    *   在浏览器中打开 `http://localhost:3000` (或你配置的端口)。
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)

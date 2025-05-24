@@ -4,18 +4,20 @@ import { WarehouseMap as WarehouseMapType } from '../types/warehouse';
 import { fetchWarehouseMap } from '../services/api';
 
 interface WarehouseMapProps {
+  warehouseId: string;
   onShelfClick: (shelfId: string) => void;
 }
 
-const WarehouseMap: React.FC<WarehouseMapProps> = ({ onShelfClick }) => {
+const WarehouseMap: React.FC<WarehouseMapProps> = ({ warehouseId, onShelfClick }) => {
   const svgRef = useRef<SVGSVGElement>(null);
   const [warehouseData, setWarehouseData] = useState<WarehouseMapType | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const loadData = async () => {
+      setLoading(true);
       try {
-        const data = await fetchWarehouseMap();
+        const data = await fetchWarehouseMap(warehouseId);
         setWarehouseData(data);
       } catch (error) {
         console.error('加载仓库数据失败:', error);
@@ -25,7 +27,7 @@ const WarehouseMap: React.FC<WarehouseMapProps> = ({ onShelfClick }) => {
     };
 
     loadData();
-  }, []);
+  }, [warehouseId]);
 
   useEffect(() => {
     if (!warehouseData || !svgRef.current) return;
@@ -58,15 +60,73 @@ const WarehouseMap: React.FC<WarehouseMapProps> = ({ onShelfClick }) => {
       .attr('font-weight', 'bold')
       .text('仓库平面图');
 
-    // 添加提示信息
-    warehouse
-      .append('text')
-      .attr('x', (width - margin.left - margin.right) / 2)
-      .attr('y', height - margin.top)
-      .attr('text-anchor', 'middle')
-      .attr('font-size', '14px')
-      .text('点击货架查看详情');
+    // 根据仓库ID决定绘制哪种布局
+    if (warehouseId === 'warehouse1') {
+      drawWarehouse1Layout(warehouse, warehouseData, shelfWidth, shelfHeight, areaGap, width, height, margin);
+    } else if (warehouseId === 'warehouse2') {
+      drawWarehouse2Layout(warehouse, warehouseData, shelfWidth, shelfHeight, areaGap, width, height, margin);
+    }
 
+    // 添加图例
+    const legendX = warehouseId === 'warehouse1'
+      ? width - margin.left - margin.right + 50
+      : width - margin.left - margin.right + 30;
+
+    const legend = warehouse
+      .append('g')
+      .attr('transform', `translate(${legendX}, ${50})`);
+
+    // 图例标题
+    legend
+      .append('text')
+      .attr('x', 0)
+      .attr('y', 0)
+      .attr('font-size', '14px')
+      .attr('font-weight', 'bold')
+      .text('图例说明');
+
+    // 图例项
+    const legendItems = [
+      { color: '#d9d9d9', text: '空货架 - 没有物品' },
+      { color: '#1890ff', text: '有1层存放物品' },
+      { color: '#52c41a', text: '有2层存放物品' },
+      { color: '#faad14', text: '有3层存放物品' },
+      { color: '#ff4d4f', text: '全部4层都有物品' }
+    ];
+
+    legendItems.forEach((item, index) => {
+      const itemG = legend
+        .append('g')
+        .attr('transform', `translate(0, ${20 + index * 25})`);
+
+      // 图例颜色方块
+      itemG
+        .append('rect')
+        .attr('width', 15)
+        .attr('height', 15)
+        .attr('fill', item.color)
+        .attr('stroke', '#595959')
+        .attr('stroke-width', 1);
+
+      // 图例文字
+      itemG
+        .append('text')
+        .attr('x', 25)
+        .attr('y', 12)
+        .attr('font-size', '12px')
+        .text(item.text);
+    });
+  }, [warehouseData, onShelfClick, warehouseId]);
+
+  // 绘制公物仓一布局
+  const drawWarehouse1Layout = (warehouse: d3.Selection<SVGGElement, unknown, null, undefined>,
+    warehouseData: WarehouseMapType,
+    shelfWidth: number,
+    shelfHeight: number,
+    areaGap: number,
+    width: number,
+    height: number,
+    margin: { top: number, right: number, bottom: number, left: number }) => {
     // 计算A区域位置
     const areaAX = 50;
     const areaAY = 50;
@@ -86,18 +146,6 @@ const WarehouseMap: React.FC<WarehouseMapProps> = ({ onShelfClick }) => {
     const areaDY = areaAY;
     const areaDWidth = shelfWidth;
     const areaDHeight = warehouseData.shelves.d.length * shelfHeight;
-
-    // 绘制外边框
-    warehouse
-      .append('rect')
-      .attr('x', 0)
-      .attr('y', 0)
-      .attr('width', areaDX + areaDWidth + 50)
-      .attr('height', Math.max(areaAHeight, areaBHeight, areaDHeight) + 120)
-      .attr('fill', 'none')
-      .attr('stroke', '#d9d9d9')
-      .attr('stroke-width', 1)
-      .attr('stroke-dasharray', '5,5');
 
     // 绘制通道标签
     // 顶部通道
@@ -162,7 +210,7 @@ const WarehouseMap: React.FC<WarehouseMapProps> = ({ onShelfClick }) => {
       .attr('text-anchor', 'middle')
       .attr('font-size', '16px')
       .attr('font-weight', 'bold')
-      .text('公物仓（一）');
+      .text(warehouseData.name);
 
     // 绘制A区域货架
     const areaA = warehouse
@@ -287,26 +335,245 @@ const WarehouseMap: React.FC<WarehouseMapProps> = ({ onShelfClick }) => {
         .attr('fill', 'white')
         .text(shelf.name);
     });
+  };
 
-    // 添加货架说明
+  // 绘制公物仓二布局
+  const drawWarehouse2Layout = (warehouse: d3.Selection<SVGGElement, unknown, null, undefined>,
+    warehouseData: WarehouseMapType,
+    shelfWidth: number,
+    shelfHeight: number,
+    areaGap: number,
+    width: number,
+    height: number,
+    margin: { top: number, right: number, bottom: number, left: number }) => {
+    // 绘制仓库外框
+    const warehouseWidth = 650;
+    const warehouseHeight = 450;
+    const warehouseX = 20;
+    const warehouseY = 20;
+
+    // 计算家具区域位置和大小
+    const furnitureWidth = 150;
+    const furnitureHeight = 250;
+    const furnitureLeftX = warehouseX + 100;
+    const furnitureLeftY = warehouseY + 100;
+    const furnitureRightX = furnitureLeftX + furnitureWidth + 80; // 中间通道
+    const furnitureRightY = furnitureLeftY;
+
+    // 计算F区货架位置（右侧纵向排列 - F16A、F16B、F16C、F16D）
+    const areaFX = warehouseX + warehouseWidth - 50;
+    const areaFY = warehouseY + 70;
+    const fShelfWidth = 30;
+    const fShelfHeight = 30;
+
+    // 计算R区货架位置（左侧纵向排列 - F18A、F18B、F14、F13）
+    const areaRX = warehouseX + 20;
+    const areaRY = warehouseY + 70;
+    const rShelfWidth = 30;
+    const rShelfHeight = 30;
+
+    // 绘制通道标签
+    // 顶部通道
     warehouse
       .append('text')
-      .attr('x', 20)
-      .attr('y', Math.max(areaAHeight, areaBHeight, areaDHeight) + 140)
-      .attr('font-size', '12px')
-      .text('备注: 每个库位为一个货架，本库共计 50 个货架，所有货架均为四层货架，货架每层分三个库位号。');
+      .attr('x', warehouseX + warehouseWidth / 2)
+      .attr('y', warehouseY + 15)
+      .attr('text-anchor', 'middle')
+      .attr('font-size', '14px')
+      .text('通道');
 
-  }, [warehouseData, onShelfClick]);
+    // 左边通道
+    warehouse
+      .append('text')
+      .attr('x', areaRX + 50)
+      .attr('y', warehouseY + warehouseHeight / 2)
+      .attr('text-anchor', 'middle')
+      .attr('font-size', '14px')
+      .text('通道');
+
+    // 右边通道
+    warehouse
+      .append('text')
+      .attr('x', areaFX - 70)
+      .attr('y', warehouseY + warehouseHeight / 2)
+      .attr('text-anchor', 'middle')
+      .attr('font-size', '14px')
+      .text('通道');
+
+    // 中间通道
+    warehouse
+      .append('text')
+      .attr('x', (furnitureLeftX + furnitureWidth + furnitureRightX) / 2)
+      .attr('y', furnitureLeftY + furnitureHeight / 2)
+      .attr('text-anchor', 'middle')
+      .attr('font-size', '14px')
+      .text('通道');
+
+    // 底部通道
+    warehouse
+      .append('text')
+      .attr('x', warehouseX + warehouseWidth / 4 - 10)
+      .attr('y', warehouseY + warehouseHeight - 30)
+      .attr('text-anchor', 'middle')
+      .attr('font-size', '14px')
+      .text('通道');
+
+    warehouse
+      .append('text')
+      .attr('x', warehouseX + warehouseWidth * 3 / 4 + 10)
+      .attr('y', warehouseY + warehouseHeight - 30)
+      .attr('text-anchor', 'middle')
+      .attr('font-size', '14px')
+      .text('通道');
+
+    // 绘制入口
+    warehouse
+      .append('rect')
+      .attr('x', warehouseX + warehouseWidth / 2 - 40)
+      .attr('y', warehouseY + warehouseHeight - 20)
+      .attr('width', 80)
+      .attr('height', 20)
+      .attr('fill', '#f0f0f0')
+      .attr('stroke', '#d9d9d9');
+
+    warehouse
+      .append('text')
+      .attr('x', warehouseX + warehouseWidth / 2)
+      .attr('y', warehouseY + warehouseHeight - 5)
+      .attr('text-anchor', 'middle')
+      .attr('font-size', '14px')
+      .text('门');
+
+    // 绘制家具区
+    // 左侧家具区
+    warehouse
+      .append('rect')
+      .attr('x', furnitureLeftX)
+      .attr('y', furnitureLeftY)
+      .attr('width', furnitureWidth)
+      .attr('height', furnitureHeight)
+      .attr('fill', 'none')
+      .attr('stroke', '#d9d9d9')
+      .attr('stroke-width', 1);
+
+    warehouse
+      .append('text')
+      .attr('x', furnitureLeftX + furnitureWidth / 2)
+      .attr('y', furnitureLeftY + furnitureHeight / 2)
+      .attr('text-anchor', 'middle')
+      .attr('font-size', '14px')
+      .text('家具区（左）');
+
+    // 右侧家具区
+    warehouse
+      .append('rect')
+      .attr('x', furnitureRightX)
+      .attr('y', furnitureRightY)
+      .attr('width', furnitureWidth)
+      .attr('height', furnitureHeight)
+      .attr('fill', 'none')
+      .attr('stroke', '#d9d9d9')
+      .attr('stroke-width', 1);
+
+    warehouse
+      .append('text')
+      .attr('x', furnitureRightX + furnitureWidth / 2)
+      .attr('y', furnitureRightY + furnitureHeight / 2)
+      .attr('text-anchor', 'middle')
+      .attr('font-size', '14px')
+      .text('家具区（右）');
+
+    // 仓库名称
+    warehouse
+      .append('text')
+      .attr('x', warehouseX + warehouseWidth / 2)
+      .attr('y', warehouseY + warehouseHeight + 30)
+      .attr('text-anchor', 'middle')
+      .attr('font-size', '16px')
+      .attr('font-weight', 'bold')
+      .text(warehouseData.name);
+
+    // 绘制右侧货架 - F16A、F16B、F16C、F16D
+    if (warehouseData.shelves.f && warehouseData.shelves.f.length > 0) {
+      const areaF = warehouse.append('g');
+
+      // 绘制F16A、F16B、F16C、F16D从上到下排列
+      warehouseData.shelves.f.forEach((shelf, index) => {
+        const shelfG = areaF
+          .append('g')
+          .attr('transform', `translate(${areaFX}, ${areaFY + index * fShelfHeight * 2})`)
+          .attr('cursor', 'pointer')
+          .on('click', () => onShelfClick(shelf.id));
+
+        // 使用与公物仓一相同的货架样式
+        shelfG
+          .append('rect')
+          .attr('width', fShelfWidth - 2)
+          .attr('height', fShelfHeight - 2)
+          .attr('fill', getShelfColor(shelf.status))
+          .attr('stroke', '#595959')
+          .attr('stroke-width', 1);
+
+        shelfG
+          .append('text')
+          .attr('x', (fShelfWidth - 2) / 2)
+          .attr('y', (fShelfHeight - 2) / 2)
+          .attr('text-anchor', 'middle')
+          .attr('dominant-baseline', 'middle')
+          .attr('font-size', '12px')
+          .attr('fill', 'white')
+          .text(shelf.name);
+      });
+    }
+
+    // 绘制左侧货架 - F18A、F18B、F14、F13
+    if (warehouseData.shelves.r && warehouseData.shelves.r.length > 0) {
+      const areaR = warehouse.append('g');
+
+      // 按照从上到下的顺序绘制：F18A、F18B、F14、F13
+      warehouseData.shelves.r.forEach((shelf, index) => {
+        const shelfG = areaR
+          .append('g')
+          .attr('transform', `translate(${areaRX}, ${areaRY + index * rShelfHeight * 2})`)
+          .attr('cursor', 'pointer')
+          .on('click', () => onShelfClick(shelf.id));
+
+        // 使用与公物仓一相同的货架样式
+        shelfG
+          .append('rect')
+          .attr('width', rShelfWidth - 2)
+          .attr('height', rShelfHeight - 2)
+          .attr('fill', getShelfColor(shelf.status))
+          .attr('stroke', '#595959')
+          .attr('stroke-width', 1);
+
+        shelfG
+          .append('text')
+          .attr('x', (rShelfWidth - 2) / 2)
+          .attr('y', (rShelfHeight - 2) / 2)
+          .attr('text-anchor', 'middle')
+          .attr('dominant-baseline', 'middle')
+          .attr('font-size', '12px')
+          .attr('fill', 'white')
+          .text(shelf.name);
+      });
+    }
+  };
 
   const getShelfColor = (status?: string) => {
     switch (status) {
-      case 'danger':
-        return '#ff4d4f';
-      case 'warning':
-        return '#faad14';
-      case 'normal':
+      case 'empty':
+        return '#d9d9d9'; // 灰色 - 货架的每一层都没物品
+      case 'first':
+        return '#1890ff'; // 蓝色 - 货架的第一层有物品
+      case 'second':
+        return '#52c41a'; // 绿色 - 货架的第二层有物品
+      case 'third':
+        return '#faad14'; // 黄色 - 货架的第三层有物品
+      case 'fourth':
+        return '#ff4d4f'; // 红色 - 货架的第四层有物品
       default:
-        return '#1890ff';
+        return '#d9d9d9'; // 默认灰色
     }
   };
 
@@ -320,7 +587,7 @@ const WarehouseMap: React.FC<WarehouseMapProps> = ({ onShelfClick }) => {
         ref={svgRef}
         width="100%"
         height="650"
-        viewBox="0 0 850 650"
+        viewBox="0 0 950 650"
         preserveAspectRatio="xMidYMid meet"
       />
     </div>

@@ -1,0 +1,151 @@
+// 主题颜色
+$primary-color: #1890ff; // 主色调
+$secondary-color: #2f54eb; // 辅助色
+$light-bg: #f0f2f5; // 浅色背景
+$dark-bg: #001529; // 深色背景
+$border-color: #d9d9d9; // 边框颜色
+
+// 状态颜色
+$success-color: #52c41a; // 成功色
+$warning-color: #faad14; // 警告色
+$error-color: #ff4d4f; // 错误色
+$empty-color: #d9d9d9; // 空状态色
+
+// 基础布局
+.header-container {
+  background-color: $dark-bg;
+  padding: 0 24px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+}
+
+// 导航条容器
+.nav-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.logo-title {
+  min-width: 220px;
+}
+
+.main-nav {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  border-bottom: none !important;
+  background-color: transparent !important;
+
+  .ant-menu-item {
+    margin: 0 20px;
+    font-size: 16px;
+
+    &.ant-menu-item-selected {
+      font-weight: bold;
+    }
+  }
+}
+
+.warehouse-selector {
+  min-width: 240px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.header-title {
+  color: white !important;
+  margin: 0 !important;
+  line-height: 64px;
+}
+
+.content-container {
+  padding: 24px;
+  background: $light-bg;
+  min-height: calc(100vh - 64px);
+}
+
+// 仓库地图和网格布局
+.warehouse-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+  height: 100%;
+}
+
+.search-grid {
+  grid-template-columns: 1fr;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.warehouse-map-section,
+.warehouse-details-section,
+.warehouse-search-section {
+  background: white;
+  border-radius: 4px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  padding: 16px;
+}
+
+.warehouse-map-container,
+.shelf-detail-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: auto;
+}
+
+// 货架和库位样式
+.position-info {
+  margin-bottom: 16px;
+}
+
+.position-items {
+  margin-top: 16px;
+}
+
+// 搜索功能相关样式
+.warehouse-search {
+  padding: 16px;
+}
+
+.search-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.search-results {
+  min-height: 300px;
+}
+
+// 选项卡导航样式
+.warehouse-tabs {
+  .ant-tabs-nav {
+    margin-bottom: 16px;
+    background: white;
+    padding: 0 16px;
+    border-radius: 4px 4px 0 0;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  }
+
+  .ant-tabs-content {
+    background: transparent;
+  }
+}
+
+// 通用辅助类
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  min-height: 200px;
+}
+
+.h-full {
+  height: 100%;
+}

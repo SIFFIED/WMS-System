@@ -1,47 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
-import { Shelf } from '../types/warehouse';
-
-interface ShelfPosition {
-  id: string;
-  name: string;
-}
-
-interface ShelfLayer {
-  id: string;
-  positions: ShelfPosition[];
-}
-
-interface ShelfDetail {
-  id: string;
-  name: string;
-  layers: ShelfLayer[];
-}
+import { ShelfDetail, ShelfPosition, ShelfLayer } from '../types/warehouse';
+import { fetchShelfDetail } from '../services/api';
 
 interface ShelvesProps {
+  warehouseId: string;
   shelfId: string;
   onPositionClick: (layerId: string, positionId: string) => void;
   onBack: () => void;
 }
 
-// 生成货架详情数据
-const generateShelfDetail = (shelfId: string): ShelfDetail => {
-  const layers = [1, 2, 3, 4].map(layerNum => ({
-    id: `${shelfId}-L${layerNum}`,
-    positions: [1, 2, 3].map(posNum => ({
-      id: `${shelfId}-L${layerNum}-P${posNum}`,
-      name: `${posNum}`
-    }))
-  }));
-
-  return {
-    id: shelfId,
-    name: shelfId,
-    layers
-  };
-};
-
-const Shelves: React.FC<ShelvesProps> = ({ shelfId, onPositionClick, onBack }) => {
+const Shelves: React.FC<ShelvesProps> = ({ warehouseId, shelfId, onPositionClick, onBack }) => {
   const svgRef = useRef<SVGSVGElement>(null);
   const [shelfDetail, setShelfDetail] = useState<ShelfDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -50,8 +19,8 @@ const Shelves: React.FC<ShelvesProps> = ({ shelfId, onPositionClick, onBack }) =
     const loadShelfDetail = async () => {
       setLoading(true);
       try {
-        // 生成货架详情数据代替从服务器获取
-        const data = generateShelfDetail(shelfId);
+        // 使用API获取货架详情，不再本地生成随机数据
+        const data = await fetchShelfDetail(warehouseId, shelfId);
         setShelfDetail(data);
         setLoading(false);
       } catch (error) {
@@ -61,7 +30,7 @@ const Shelves: React.FC<ShelvesProps> = ({ shelfId, onPositionClick, onBack }) =
     };
 
     loadShelfDetail();
-  }, [shelfId]);
+  }, [warehouseId, shelfId]);
 
   useEffect(() => {
     if (!shelfDetail || !svgRef.current) return;
@@ -144,7 +113,7 @@ const Shelves: React.FC<ShelvesProps> = ({ shelfId, onPositionClick, onBack }) =
           .attr('width', positionWidth - 10)
           .attr('height', layerHeight - 10)
           .attr('rx', 4)
-          .attr('fill', '#f0f0f0')
+          .attr('fill', position.hasItems ? '#1890ff' : '#f0f0f0') // 有物品为蓝色，无物品为灰色
           .attr('stroke', '#d9d9d9')
           .attr('stroke-width', 1);
 
@@ -156,6 +125,7 @@ const Shelves: React.FC<ShelvesProps> = ({ shelfId, onPositionClick, onBack }) =
           .attr('text-anchor', 'middle')
           .attr('dominant-baseline', 'middle')
           .attr('font-size', '16px')
+          .attr('fill', position.hasItems ? 'white' : '#666') // 有物品时文字为白色，无物品时为灰色
           .text(position.name);
       });
     });
@@ -186,14 +156,49 @@ const Shelves: React.FC<ShelvesProps> = ({ shelfId, onPositionClick, onBack }) =
       .attr('height', 10)
       .attr('fill', '#595959');
 
-    // 添加货架说明
-    shelf
+    // 添加图例
+    const legend = svg
+      .append('g')
+      .attr('transform', `translate(${width + margin.left}, ${margin.top + 50})`);
+
+    // 图例标题
+    legend
       .append('text')
-      .attr('x', width / 2 - margin.left)
-      .attr('y', layerHeight * 4 + 40)
-      .attr('text-anchor', 'middle')
+      .attr('x', 0)
+      .attr('y', 0)
       .attr('font-size', '14px')
-      .text('每个货架均为四层，货架每层分为三个库位');
+      .attr('font-weight', 'bold')
+      .text('库位状态图例');
+
+    // 图例项
+    const legendItems = [
+      { color: '#f0f0f0', text: '无物品' },
+      { color: '#1890ff', text: '有物品' }
+    ];
+
+    legendItems.forEach((item, index) => {
+      const itemG = legend
+        .append('g')
+        .attr('transform', `translate(0, ${25 + index * 30})`);
+
+      // 图例颜色方块
+      itemG
+        .append('rect')
+        .attr('width', 20)
+        .attr('height', 20)
+        .attr('fill', item.color)
+        .attr('stroke', '#d9d9d9')
+        .attr('stroke-width', 1)
+        .attr('rx', 4);
+
+      // 图例文字
+      itemG
+        .append('text')
+        .attr('x', 30)
+        .attr('y', 15)
+        .attr('font-size', '14px')
+        .text(item.text);
+    });
 
   }, [shelfDetail, onBack, onPositionClick]);
 
@@ -207,7 +212,7 @@ const Shelves: React.FC<ShelvesProps> = ({ shelfId, onPositionClick, onBack }) =
         ref={svgRef}
         width="100%"
         height="550"
-        viewBox="0 0 650 550"
+        viewBox="0 0 750 550"
         preserveAspectRatio="xMidYMid meet"
       />
     </div>

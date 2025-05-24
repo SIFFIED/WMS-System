@@ -24,7 +24,7 @@ function App() {
         },
       }}
     >
-      <div className="App">
+    <div className="App">
         {loading ? (
           <div className="loading-container">
             <Spin size="large" tip="正在加载仓库系统..." />
@@ -32,7 +32,7 @@ function App() {
         ) : (
           <WarehouseVisualization />
         )}
-      </div>
+    </div>
     </ConfigProvider>
   );
 }

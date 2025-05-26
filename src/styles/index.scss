@@ -1,0 +1,375 @@
+// 主题颜色
+$primary-color: #1890ff; // 主色调
+$secondary-color: #2f54eb; // 辅助色
+$light-bg: #f0f2f5; // 浅色背景
+$dark-bg: #001529; // 深色背景
+$border-color: #d9d9d9; // 边框颜色
+
+// 状态颜色
+$success-color: #52c41a; // 成功色
+$warning-color: #faad14; // 警告色
+$error-color: #ff4d4f; // 错误色
+$empty-color: #d9d9d9; // 空状态色
+
+// 响应式断点
+$breakpoint-xl: 1920px; // 2K分辨率
+$breakpoint-xxl: 2560px; // 更高分辨率
+
+// 基础布局
+.header-container {
+  background-color: $dark-bg;
+  padding: 0 24px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+
+  @media (min-width: $breakpoint-xl) {
+    height: 72px;
+    padding: 0 48px;
+  }
+
+  @media (min-width: $breakpoint-xxl) {
+    height: 80px;
+    padding: 0 64px;
+  }
+}
+
+// 导航条容器
+.nav-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 1920px;
+  margin: 0 auto;
+
+  @media (min-width: $breakpoint-xl) {
+    max-width: 2560px;
+  }
+}
+
+.logo-title {
+  min-width: 220px;
+
+  @media (min-width: $breakpoint-xl) {
+    min-width: 300px;
+  }
+}
+
+.main-nav {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  border-bottom: none !important;
+  background-color: transparent !important;
+
+  .ant-menu-item {
+    margin: 0 20px;
+    font-size: 16px;
+
+    @media (min-width: $breakpoint-xl) {
+      margin: 0 30px;
+      font-size: 18px;
+    }
+
+    @media (min-width: $breakpoint-xxl) {
+      margin: 0 40px;
+      font-size: 20px;
+    }
+
+    &.ant-menu-item-selected {
+      font-weight: bold;
+    }
+  }
+}
+
+.warehouse-selector {
+  min-width: 240px;
+  display: flex;
+  justify-content: flex-end;
+
+  @media (min-width: $breakpoint-xl) {
+    min-width: 300px;
+
+    .ant-select {
+      width: 200px !important;
+    }
+
+    span,
+    .anticon {
+      font-size: 16px !important;
+    }
+  }
+}
+
+.header-title {
+  color: white !important;
+  margin: 0 !important;
+  line-height: 64px;
+  font-size: 20px !important;
+
+  @media (min-width: $breakpoint-xl) {
+    font-size: 24px !important;
+    line-height: 72px;
+  }
+
+  @media (min-width: $breakpoint-xxl) {
+    font-size: 28px !important;
+    line-height: 80px;
+  }
+}
+
+.content-container {
+  padding: 24px;
+  background: $light-bg;
+  min-height: calc(100vh - 64px);
+
+  @media (min-width: $breakpoint-xl) {
+    padding: 32px;
+    min-height: calc(100vh - 72px);
+  }
+
+  @media (min-width: $breakpoint-xxl) {
+    padding: 40px;
+    min-height: calc(100vh - 80px);
+  }
+}
+
+// 仓库地图和网格布局
+.warehouse-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+  height: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
+
+  @media (min-width: $breakpoint-xl) {
+    max-width: 2000px;
+    gap: 30px;
+  }
+
+  @media (min-width: $breakpoint-xxl) {
+    max-width: 2400px;
+    gap: 40px;
+  }
+}
+
+.search-grid {
+  grid-template-columns: 1fr;
+  max-width: 1000px;
+  margin: 0 auto;
+
+  @media (min-width: $breakpoint-xl) {
+    max-width: 1200px;
+  }
+
+  @media (min-width: $breakpoint-xxl) {
+    max-width: 1400px;
+  }
+}
+
+.warehouse-map-section,
+.warehouse-details-section,
+.warehouse-search-section {
+  background: white;
+  border-radius: 4px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  padding: 16px;
+
+  @media (min-width: $breakpoint-xl) {
+    padding: 24px;
+    border-radius: 6px;
+  }
+
+  @media (min-width: $breakpoint-xxl) {
+    padding: 32px;
+    border-radius: 8px;
+  }
+}
+
+.warehouse-map-container,
+.shelf-detail-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: auto;
+
+  svg {
+    @media (min-width: $breakpoint-xl) {
+      width: 100%;
+      height: auto;
+    }
+  }
+}
+
+// 货架和库位样式
+.position-info {
+  margin-bottom: 16px;
+
+  @media (min-width: $breakpoint-xl) {
+    margin-bottom: 24px;
+
+    .ant-descriptions-item-label,
+    .ant-descriptions-item-content {
+      font-size: 16px;
+      padding: 12px 24px;
+    }
+  }
+}
+
+.position-items {
+  margin-top: 16px;
+
+  @media (min-width: $breakpoint-xl) {
+    margin-top: 24px;
+
+    .ant-table {
+      font-size: 16px;
+    }
+
+    .ant-table-thead>tr>th {
+      padding: 12px 16px;
+    }
+
+    .ant-table-tbody>tr>td {
+      padding: 12px 16px;
+    }
+  }
+}
+
+// 搜索功能相关样式
+.warehouse-search {
+  padding: 16px;
+
+  @media (min-width: $breakpoint-xl) {
+    padding: 24px;
+  }
+}
+
+.search-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+
+  @media (min-width: $breakpoint-xl) {
+    margin-bottom: 30px;
+
+    .ant-input {
+      height: 40px;
+      font-size: 16px;
+      width: 400px !important;
+    }
+
+    .ant-btn {
+      height: 40px;
+      font-size: 16px;
+      padding: 0 20px;
+    }
+  }
+}
+
+.search-results {
+  min-height: 300px;
+
+  @media (min-width: $breakpoint-xl) {
+    min-height: 400px;
+  }
+}
+
+// 选项卡导航样式
+.warehouse-tabs {
+  .ant-tabs-nav {
+    margin-bottom: 16px;
+    background: white;
+    padding: 0 16px;
+    border-radius: 4px 4px 0 0;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  }
+
+  .ant-tabs-content {
+    background: transparent;
+  }
+}
+
+// 通用辅助类
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  min-height: 200px;
+
+  @media (min-width: $breakpoint-xl) {
+    min-height: 300px;
+  }
+}
+
+.h-full {
+  height: 100%;
+}
+
+// D3图表文字响应式
+text {
+  @media (min-width: $breakpoint-xl) {
+    font-size: 14px !important;
+  }
+
+  @media (min-width: $breakpoint-xxl) {
+    font-size: 16px !important;
+  }
+}
+
+// D3图表响应式样式
+.responsive-svg {
+  max-width: 100%;
+  height: auto;
+
+  @media (min-width: $breakpoint-xl) {
+    max-height: 750px;
+  }
+
+  @media (min-width: $breakpoint-xxl) {
+    max-height: 900px;
+  }
+}
+
+// 右侧控制区域
+.right-controls {
+  display: flex;
+  align-items: center;
+}
+
+// 用户信息区域
+.user-info {
+  margin-left: 20px;
+}
+
+// 用户信息和登出按钮样式
+.user-avatar-container {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  margin-left: 16px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background-color 0.3s;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .user-name {
+    color: white;
+    margin-left: 8px;
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    @media (min-width: $breakpoint-xl) {
+      max-width: 150px;
+      font-size: 16px;
+    }
+  }
+}

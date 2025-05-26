@@ -1,0 +1,185 @@
+/* 变量定义 */
+$primary-color: #1890ff;
+$warning-color: #faad14;
+$danger-color: #ff4d4f;
+$success-color: #52c41a;
+$text-color: #352e2e;
+$background-color: #f0f2f5;
+$header-bg: #5882aa;
+
+/* 仓库可视化样式 */
+.warehouse-map-container {
+  width: 100%;
+  height: 600px;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+  svg {
+    background-color: #f9f9f9;
+    border-radius: 4px;
+  }
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 20rem;
+}
+
+/* 货架详情容器 */
+.shelf-detail-container {
+  width: 100%;
+  height: 600px;
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+  svg {
+    background-color: #f9f9f9;
+  }
+}
+
+/* 货架物品详情 */
+.position-info {
+  margin-bottom: 16px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.position-items {
+  margin-top: 16px;
+  height: calc(100% - 160px);
+  overflow: auto;
+}
+
+/* 布局样式 */
+.header-container {
+  display: flex;
+  align-items: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.header-title {
+  color: white;
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.content-container {
+  padding: 1.5rem;
+  background-color: $background-color;
+  min-height: calc(100vh - 64px);
+}
+
+.warehouse-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+.warehouse-map-section {
+  background-color: #ffffff;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  transition: box-shadow 0.3s ease-in-out;
+
+  &:hover {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+}
+
+.warehouse-details-section {
+  background-color: #ffffff;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  transition: box-shadow 0.3s ease-in-out;
+
+  &:hover {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+}
+
+@media (min-width: 1024px) {
+  .warehouse-grid {
+    grid-template-columns: 2fr 1fr;
+  }
+}
+
+/* 响应式调整 */
+@media (max-width: 1024px) {
+  .warehouse-map-container {
+    height: 500px;
+  }
+
+  .shelf-detail-container {
+    height: 500px;
+  }
+}
+
+@media (max-width: 768px) {
+  .warehouse-map-container {
+    height: 400px;
+  }
+
+  .shelf-detail-container {
+    height: 400px;
+  }
+
+  .header-title {
+    font-size: 1.2rem;
+  }
+
+  .warehouse-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 自定义Ant Design样式 */
+.ant-layout-header {
+  background: $header-bg;
+  padding: 0 20px;
+}
+
+.ant-card {
+  height: 100%;
+
+  .ant-card-body {
+    height: calc(100% - 57px);
+    overflow: auto;
+  }
+
+  .ant-card-head {
+    background-color: #fafafa;
+    border-bottom: 1px solid #f0f0f0;
+  }
+}
+
+.ant-table-wrapper {
+  height: 100%;
+}
+
+.ant-tag {
+  margin-right: 0;
+}
+
+.ant-descriptions-bordered .ant-descriptions-item-label {
+  background-color: #fafafa;
+}
+
+/* 状态颜色 */
+.status-normal {
+  color: $success-color;
+}
+
+.status-warning {
+  color: $warning-color;
+}
+
+.status-danger {
+  color: $danger-color;
+}

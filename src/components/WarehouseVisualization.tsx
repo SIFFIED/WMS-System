@@ -77,27 +77,30 @@ const WarehouseVisualization: React.FC = () => {
   const handleNavChange = (key: string) => {
     setActiveTab(key);
 
-    // 如果切换到地图标签，并且有搜索结果
-    if (key === 'map' && searchResult) {
-      if (searchResult.found && searchResult.shelfId) {
-        // 如果找到物品，跳转到物品所在货架
-        setSelectedWarehouseId(searchResult.warehouseId || 'warehouse1');
-        setSelectedShelfId(searchResult.shelfId);
-        setSelectedLayerId(searchResult.layerId || null);
-        setSelectedPositionId(searchResult.positionId || null);
-        setViewMode('shelf');
-      } else {
-        // 如果物品不存在，跳转到默认仓库页面
-        setSelectedWarehouseId('warehouse1');
-        setSelectedShelfId(null);
-        setSelectedLayerId(null);
-        setSelectedPositionId(null);
-        setViewMode('warehouse');
-      }
+    // 如果切换到地图标签
+    if (key === 'map') {
+      // 无论是否有搜索结果，都重置为仓库一的初始视图
+      setSelectedWarehouseId('warehouse1');
+      setSelectedShelfId(null);
+      setSelectedLayerId(null);
+      setSelectedPositionId(null);
+      setViewMode('warehouse');
+
+      // 清空搜索结果
+      setSearchResult(null);
     }
   };
 
   const handleSearchResult = (result: SearchResultInfo) => {
+    console.log('WarehouseVisualization 接收到搜索结果:', result);
+
+    // 如果搜索结果中包含仓库名称，更新选中的仓库ID
+    if (result.found && result.warehouseId) {
+      if (result.warehouseId === '公物仓一' || result.warehouseId === '公物仓二') {
+        console.log('设置仓库名称:', result.warehouseId);
+      }
+    }
+
     setSearchResult(result);
   };
 
@@ -135,6 +138,7 @@ const WarehouseVisualization: React.FC = () => {
               selectedLayerId={selectedLayerId}
               selectedPositionId={selectedPositionId}
               searchItem={searchResult?.found ? searchResult.item : undefined}
+              locationInfo={searchResult?.locationInfo}
             />
           </div>
         </div>
@@ -143,7 +147,10 @@ const WarehouseVisualization: React.FC = () => {
       return (
         <div className="warehouse-grid search-grid">
           <div className="warehouse-search-section">
-            <Search warehouseId={selectedWarehouseId} onSearchResult={handleSearchResult} />
+            <Search
+              warehouseId={selectedWarehouseId}
+              onSearchResult={handleSearchResult}
+            />
           </div>
         </div>
       );

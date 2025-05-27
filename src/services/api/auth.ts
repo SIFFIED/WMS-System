@@ -148,37 +148,117 @@ class AuthService {
   }
 
   /**
-   * Http请求服务端方法
-   * @param method HTTP方法，如 'GET', 'POST'等
-   * @param url 请求URL
-   * @param args 请求参数
-   * @returns 异步结果
+   * 仓库货架库位的请求服务端方法
    */
-  async restRequest(
-    method: string,
-    url: string,
-    args: any,
-  ): Promise<ResultType<any>> {
+  async warehouseRequest<T>(module: string, action: string, params: any): Promise<ResultType<T>> {
     try {
-      const response = await fetch(url, {
-        method: method,
+      const response = await fetch(`${this.baseUrl}/rest/dataproxy`, {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': this.getAccessToken()
         },
-        body: JSON.stringify(args),
-        // 30秒超时 (fetch API本身不支持超时设置，需要结合AbortController实现)
+        body: JSON.stringify({
+          module: "Collection",
+          action: "Load",
+          belongId: "509305312306663424",
+          targetId: "548820032067616768",
+          params: {
+            requireTotalCount: true,
+            options: {
+              match: {
+                speciesId: "710060066056966145"
+              }
+            },
+            collName: "standard-species-item"
+          },
+          relations: [
+            "509305312306663424",
+            "548820032067616768"
+          ]
+        })
       });
 
-      if (response.status === 200) {
-        const content = await response.text();
-        return JSON.parse(content.replace(/"_id":/gm, '"id":'));
-      } else {
-        return badRequest(response.statusText, response.status);
-      }
+      const result = await response.json();
+      return result;
     } catch (error) {
-      console.error('REST请求失败:', error);
-      return badRequest('服务请求异常');
+      console.error('API请求失败:', error);
+      return {
+        code: 500,
+        data: null as any,
+        msg: '服务请求异常',
+        success: false
+      };
+    }
+  }
+  /**
+     * 用卡片编码搜索方法
+     * @param cardCode 卡片编码
+     */
+  async searchCardCode<T>(cardCode: string): Promise<ResultType<T>> {
+    try {
+      console.log('发送卡片编码搜索请求:', cardCode);
+
+      const requestBody = {
+        module: "Collection",
+        action: "Load",
+        belongId: "509305312306663424",
+        targetId: "548820032067616768",
+        params: {
+          userData: [],
+          options: {
+            match: {
+              isDeleted: false,
+              T695329228530655233: cardCode // 使用传入的卡片编码
+            },
+            project: {
+              archives: 0
+            }
+          },
+          belongId: "509305312306663424",
+          collName: "_system-things"
+        },
+        relations: [
+          "509305312306663424",
+          "548820032067616768"
+        ]
+      };
+
+      console.log('请求体:', JSON.stringify(requestBody, null, 2));
+
+      const response = await fetch(`${this.baseUrl}/rest/dataproxy`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': this.getAccessToken()
+        },
+        body: JSON.stringify(requestBody)
+      });
+
+      const result = await response.json();
+      console.log('卡片编码搜索API返回:', result);
+
+      // 检查返回的数据结构
+      if (result.success && result.data) {
+        if (Array.isArray(result.data)) {
+          console.log(`API返回数据条数: ${result.data.length}`);
+          if (result.data.length > 0) {
+            console.log('第一条数据字段:', Object.keys(result.data[0]));
+          }
+        } else {
+          console.log('API返回的数据不是数组:', typeof result.data);
+        }
+      }
+
+      return result;
+    } catch (error) {
+      console.error('API请求失败:', error);
+      return {
+        code: 500,
+        data: null as any,
+        msg: '服务请求异常',
+        success: false
+      };
     }
   }
 

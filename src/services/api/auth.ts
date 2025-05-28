@@ -261,7 +261,99 @@ class AuthService {
       };
     }
   }
+  /**
+     * 所有物品数据请求方法
+     */
+  async getAllItems<T>(): Promise<ResultType<T>> {
+    try {
+      const response = await fetch(`${this.baseUrl}/rest/dataproxy`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': this.getAccessToken()
+        },
+        body: JSON.stringify({
+          module: "Collection",
+          action: "Load",
+          belongId: "509305312306663424",
+          targetId: "548820032067616768",
+          params: {
+            sort: [
+              {
+                selector: "id",
+                desc: false
+              }
+            ],
+            group: null,
+            requireTotalCount: true,
+            searchOperation: "contains",
+            searchValue: null,
+            userData: [],
+            filter: [
+              [
+                [
+                  "id",
+                  "<>",
+                  null
+                ],
+                "and",
+                [
+                  "id",
+                  "<>",
+                  ""
+                ]
+              ],
+              "and",
+              [
+                [
+                  "T695329228530655233",
+                  "<>",
+                  null
+                ],
+                "and",
+                [
+                  "T695329228530655233",
+                  "<>",
+                  ""
+                ]
+              ],
+              "and",
+              [
+                "T652171404141268993",
+                "=",
+                "S652171467810803713"
+              ]
+            ],
+            options: {
+              match: {
+                isDeleted: false
+              },
+              project: {
+                archives: 0
+              }
+            },
+            belongId: "509305312306663424",
+            collName: "_system-things"
+          },
+          relations: [
+            "509305312306663424",
+            "548820032067616768"
+          ]
+        })
+      });
 
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('API请求失败:', error);
+      return {
+        code: 500,
+        data: null as any,
+        msg: '服务请求异常',
+        success: false
+      };
+    }
+  }
   /**
    * 授权请求方法
    */

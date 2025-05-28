@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Layout, Typography, Select, Space, Tabs, Menu, Dropdown, Avatar, Button, message } from 'antd';
 import WarehouseMap from './WarehouseMap';
 import Shelves from './Shelves';
 import ItemsDetail from './ItemsDetail';
 import Search, { SearchResultInfo } from './Search';
-import { fetchWarehouseList } from '../services/api';
-import { AppstoreOutlined, SearchOutlined, DatabaseOutlined, UserOutlined, LogoutOutlined } from '@ant-design/icons';
+import { fetchWarehouseList, refreshItemsData, fetchWarehouseMap } from '../services/api';
+import { AppstoreOutlined, SearchOutlined, DatabaseOutlined, UserOutlined, LogoutOutlined, SyncOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -16,6 +16,30 @@ const { Option } = Select;
 interface WarehouseOption {
   id: string;
   name: string;
+}
+
+// 错误边界组件
+class ErrorBoundary extends React.Component<{ children: React.ReactNode, fallback: React.ReactNode }, { hasError: boolean }> {
+  constructor(props: { children: React.ReactNode, fallback: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error: any) {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: any, errorInfo: any) {
+    console.error('组件渲染错误:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return this.props.fallback;
+    }
+
+    return this.props.children;
+  }
 }
 
 const WarehouseVisualization: React.FC = () => {
@@ -30,6 +54,13 @@ const WarehouseVisualization: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [activeTab, setActiveTab] = useState<string>('map');
   const [searchResult, setSearchResult] = useState<SearchResultInfo | null>(null);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
+  const [refreshKey, setRefreshKey] = useState<number>(0);
+  const [warehouseMapKey, setWarehouseMapKey] = useState<number>(0);
+  const [shelvesKey, setShelvesKey] = useState<number>(0);
+  const [warehouseData, setWarehouseData] = useState<any>(null);
+  const [mapError, setMapError] = useState<boolean>(false);
+  const [shelvesError, setShelvesError] = useState<boolean>(false);
 
   // 获取仓库列表
   useEffect(() => {
@@ -50,44 +81,151 @@ const WarehouseVisualization: React.FC = () => {
     loadWarehouseOptions();
   }, []);
 
+  // 预加载仓库数据
+  useEffect(() => {
+    const loadWarehouseData = async () => {
+      try {
+        if (selectedWarehouseId) {
+          console.log('预加载仓库数据:', selectedWarehouseId);
+          const data = await fetchWarehouseMap(selectedWarehouseId);
+          setWarehouseData(data);
+          setMapError(false);
+        }
+      } catch (error) {
+        console.error('预加载仓库数据失败:', error);
+        setMapError(true);
+      }
+    };
+
+    loadWarehouseData();
+  }, [selectedWarehouseId, refreshKey]);
+
   const handleShelfClick = (shelfId: string) => {
-    setSelectedShelfId(shelfId);
+    console.log('货架点击:', shelfId);
+
+    // 先重置相关状态
     setSelectedLayerId(null);
     setSelectedPositionId(null);
-    setViewMode('shelf');
+    setShelvesError(false);
+    setShelvesKey(prev => prev + 1);
+
+    // 异步设置新的货架ID和视图模式，确保DOM有时间完成更新
+    setTimeout(() => {
+      setSelectedShelfId(shelfId);
+      setViewMode('shelf');
+    }, 0);
   };
 
   const handlePositionClick = (layerId: string, positionId: string) => {
-    setSelectedLayerId(layerId);
-    setSelectedPositionId(positionId);
+    console.log('库位点击:', layerId, positionId);
+    // 使用函数式更新防止批量更新导致的渲染问题
+    setSelectedLayerId(prevLayerId => {
+      // 只有在值真正变化时才更新
+      if (prevLayerId !== layerId) {
+        return layerId;
+      }
+      return prevLayerId;
+    });
+
+    setSelectedPositionId(prevPositionId => {
+      // 只有在值真正变化时才更新
+      if (prevPositionId !== positionId) {
+        return positionId;
+      }
+      return prevPositionId;
+    });
   };
 
   const handleBackToWarehouse = () => {
-    setViewMode('warehouse');
+    console.log('返回仓库视图');
+
+    // 完全重置所有相关状态
+    setSelectedLayerId(null);
+    setSelectedPositionId(null);
+    setShelvesError(false);
+
+    // 使用setTimeout确保状态更新在视图模式切换前完成
+    setTimeout(() => {
+      setViewMode('warehouse');
+      // 强制刷新地图
+      const newKey = Date.now();
+      setWarehouseMapKey(newKey);
+      setRefreshKey(newKey);
+
+      // 重新加载数据
+      fetchWarehouseMap(selectedWarehouseId).then(data => {
+        setWarehouseData(data);
+        console.log('返回仓库视图：已重新加载仓库数据');
+      }).catch(e => {
+        console.error('返回仓库视图：重新加载仓库数据失败:', e);
+        setMapError(true);
+      });
+    }, 0);
   };
 
   const handleWarehouseChange = (warehouseId: string) => {
+    console.log('切换仓库:', warehouseId);
     setSelectedWarehouseId(warehouseId);
     setSelectedShelfId(null);
     setSelectedLayerId(null);
     setSelectedPositionId(null);
     setViewMode('warehouse');
+    setMapError(false);
+    setShelvesError(false);
+    setWarehouseMapKey(prev => prev + 1);
   };
 
-  const handleNavChange = (key: string) => {
+  const handleNavChange = async (key: string) => {
     setActiveTab(key);
 
     // 如果切换到地图标签
     if (key === 'map') {
-      // 无论是否有搜索结果，都重置为仓库一的初始视图
-      setSelectedWarehouseId('warehouse1');
-      setSelectedShelfId(null);
-      setSelectedLayerId(null);
-      setSelectedPositionId(null);
-      setViewMode('warehouse');
+      // 显示加载状态
+      setRefreshing(true);
 
-      // 清空搜索结果
-      setSearchResult(null);
+      try {
+        console.log('导航栏：刷新仓库数据并切换到地图视图');
+
+        // 先完全重置所有状态
+        setSelectedWarehouseId('warehouse1');
+        setSelectedShelfId(null);
+        setSelectedLayerId(null);
+        setSelectedPositionId(null);
+        setViewMode('warehouse');
+        setShelvesError(false);
+        setMapError(false);
+        setSearchResult(null);
+
+        // 调用刷新数据API
+        const success = await refreshItemsData();
+
+        if (success) {
+          message.success('数据刷新成功');
+
+          // 使用新的key触发组件重新渲染
+          const newKey = Date.now();
+          setRefreshKey(newKey);
+          setWarehouseMapKey(newKey);
+          setShelvesKey(newKey);
+
+          // 重新加载仓库数据
+          try {
+            const data = await fetchWarehouseMap('warehouse1');
+            setWarehouseData(data);
+            console.log('导航栏：已重新加载仓库数据');
+          } catch (e) {
+            console.error('导航栏：重新加载仓库数据失败', e);
+            setMapError(true);
+          }
+        } else {
+          message.error('数据刷新失败');
+        }
+      } catch (error) {
+        console.error('导航栏：刷新数据出错', error);
+        message.error('刷新数据时发生错误');
+      } finally {
+        setRefreshing(false);
+      }
     }
   };
 
@@ -111,6 +249,41 @@ const WarehouseVisualization: React.FC = () => {
     navigate('/login');
   };
 
+  // 处理刷新按钮点击 - 此功能已合并到导航栏"仓库地图"按钮中，但保留供其他地方可能调用
+  const handleRefresh = async () => {
+    console.log('开始刷新数据');
+    setRefreshing(true);
+    try {
+      const success = await refreshItemsData();
+      if (success) {
+        message.success('数据刷新成功');
+        // 使用新的key触发组件重新渲染
+        const newRefreshKey = Date.now();
+        setRefreshKey(newRefreshKey);
+        setWarehouseMapKey(newRefreshKey);
+        setShelvesKey(newRefreshKey);
+        console.log('设置新的刷新键:', newRefreshKey);
+
+        // 重新加载仓库数据
+        try {
+          const data = await fetchWarehouseMap(selectedWarehouseId);
+          setWarehouseData(data);
+          setMapError(false);
+        } catch (e) {
+          console.error('刷新后重新加载仓库数据失败:', e);
+          setMapError(true);
+        }
+      } else {
+        message.error('数据刷新失败');
+      }
+    } catch (error) {
+      console.error('刷新数据出错:', error);
+      message.error('刷新数据时发生错误');
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   // 渲染内容区域
   const renderContent = () => {
     if (activeTab === 'map') {
@@ -118,17 +291,97 @@ const WarehouseVisualization: React.FC = () => {
         <div className="warehouse-grid">
           <div className="warehouse-map-section">
             {viewMode === 'warehouse' ? (
-              <WarehouseMap
-                warehouseId={selectedWarehouseId}
-                onShelfClick={handleShelfClick}
-              />
+              <ErrorBoundary
+                key={`warehouse-map-boundary-${warehouseMapKey}`}
+                fallback={
+                  <div className="error-container">
+                    <h3>仓库地图加载失败</h3>
+                    <p>请尝试刷新数据或重新加载页面</p>
+                    <Button onClick={() => {
+                      // 完全重置状态并强制重新渲染
+                      setMapError(false);
+                      const newKey = Date.now();
+                      setWarehouseMapKey(newKey);
+                      setRefreshKey(newKey);
+
+                      // 重新加载数据
+                      fetchWarehouseMap(selectedWarehouseId).then(data => {
+                        setWarehouseData(data);
+                        console.log('已重新加载仓库数据');
+                      }).catch(e => {
+                        console.error('重新加载仓库数据失败:', e);
+                      });
+                    }}>重试</Button>
+                  </div>
+                }
+              >
+                {mapError ? (
+                  <div className="error-container">
+                    <h3>仓库地图加载失败</h3>
+                    <p>请尝试刷新数据或重新加载页面</p>
+                    <Button onClick={() => {
+                      // 完全重置状态并强制重新渲染
+                      setMapError(false);
+                      const newKey = Date.now();
+                      setWarehouseMapKey(newKey);
+                      setRefreshKey(newKey);
+
+                      // 重新加载数据
+                      fetchWarehouseMap(selectedWarehouseId).then(data => {
+                        setWarehouseData(data);
+                        console.log('已重新加载仓库数据');
+                      }).catch(e => {
+                        console.error('重新加载仓库数据失败:', e);
+                      });
+                    }}>重试</Button>
+                  </div>
+                ) : (
+                  <div key={`warehouse-map-container-${warehouseMapKey}`} className="map-container">
+                    <WarehouseMap
+                      key={`warehouse-map-${warehouseMapKey}`}
+                      warehouseId={selectedWarehouseId}
+                      onShelfClick={handleShelfClick}
+                      refreshKey={refreshKey}
+                      initialData={warehouseData}
+                    />
+                  </div>
+                )}
+              </ErrorBoundary>
             ) : (
-              <Shelves
-                warehouseId={selectedWarehouseId}
-                shelfId={selectedShelfId!}
-                onPositionClick={handlePositionClick}
-                onBack={handleBackToWarehouse}
-              />
+              <ErrorBoundary
+                key={`shelves-boundary-${shelvesKey}`}
+                fallback={
+                  <div className="error-container">
+                    <h3>货架详情加载失败</h3>
+                    <p>请点击导航栏"仓库地图"按钮返回</p>
+                  </div>
+                }
+              >
+                {shelvesError ? (
+                  <div className="error-container">
+                    <h3>货架详情加载失败</h3>
+                    <p>请点击导航栏"仓库地图"按钮返回</p>
+                  </div>
+                ) : selectedShelfId ? (
+                  <div key={`shelves-container-${shelvesKey}`} className="shelves-container">
+                    <Shelves
+                      key={`shelves-${shelvesKey}-${selectedShelfId}`}
+                      warehouseId={selectedWarehouseId}
+                      shelfId={selectedShelfId}
+                      onPositionClick={handlePositionClick}
+                      onBack={handleBackToWarehouse}
+                      refreshKey={refreshKey}
+                      onError={() => setShelvesError(true)}
+                    />
+                  </div>
+                ) : (
+                  <div className="empty-container">
+                    <h3>未选择货架</h3>
+                    <p>请在仓库地图中选择一个货架</p>
+                    <Button onClick={handleBackToWarehouse}>刷新仓库地图</Button>
+                  </div>
+                )}
+              </ErrorBoundary>
             )}
           </div>
           <div className="warehouse-details-section">
@@ -139,6 +392,7 @@ const WarehouseVisualization: React.FC = () => {
               selectedPositionId={selectedPositionId}
               searchItem={searchResult?.found ? searchResult.item : undefined}
               locationInfo={searchResult?.locationInfo}
+              refreshKey={refreshKey}
             />
           </div>
         </div>
@@ -174,8 +428,8 @@ const WarehouseVisualization: React.FC = () => {
             theme="dark"
             className="main-nav"
           >
-            <Menu.Item key="map" icon={<AppstoreOutlined />}>
-              仓库地图
+            <Menu.Item key="map" icon={refreshing ? <SyncOutlined spin /> : <AppstoreOutlined />}>
+              {refreshing ? '正在刷新...' : '仓库地图'}
             </Menu.Item>
             <Menu.Item key="search" icon={<SearchOutlined />}>
               物品搜索
@@ -216,9 +470,7 @@ const WarehouseVisualization: React.FC = () => {
                     style={{ backgroundColor: '#1890ff' }}
                     icon={<UserOutlined />}
                   />
-                  <span className="user-name">
-                    {user?.name || '用户'}
-                  </span>
+                  <span className="username">{user?.username || '用户'}</span>
                 </div>
               </Dropdown>
             </div>

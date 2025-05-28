@@ -28,6 +28,84 @@ $header-bg: #5882aa;
   height: 20rem;
 }
 
+/* 错误状态容器 */
+.error-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 20rem;
+  background-color: #fff2f0;
+  border: 1px solid #ffccc7;
+  border-radius: 4px;
+  padding: 2rem;
+  text-align: center;
+  margin: 1rem 0;
+
+  h3 {
+    color: $danger-color;
+    margin-bottom: 1rem;
+  }
+
+  p {
+    color: #5c5c5c;
+    margin-bottom: 1.5rem;
+  }
+
+  button {
+    background-color: $primary-color;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+
+    &:hover {
+      background-color: darken($primary-color, 10%);
+    }
+  }
+}
+
+/* 空状态容器 */
+.empty-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 20rem;
+  background-color: #f0f7ff;
+  border: 1px solid #bae7ff;
+  border-radius: 4px;
+  padding: 2rem;
+  text-align: center;
+  margin: 1rem 0;
+
+  h3 {
+    color: $primary-color;
+    margin-bottom: 1rem;
+  }
+
+  p {
+    color: #5c5c5c;
+    margin-bottom: 1.5rem;
+  }
+
+  button {
+    background-color: $primary-color;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+
+    &:hover {
+      background-color: darken($primary-color, 10%);
+    }
+  }
+}
+
 /* 货架详情容器 */
 .shelf-detail-container {
   width: 100%;
@@ -119,6 +197,11 @@ $header-bg: #5882aa;
   .shelf-detail-container {
     height: 500px;
   }
+
+  .error-container,
+  .empty-container {
+    height: 15rem;
+  }
 }
 
 @media (max-width: 768px) {
@@ -128,6 +211,12 @@ $header-bg: #5882aa;
 
   .shelf-detail-container {
     height: 400px;
+  }
+
+  .error-container,
+  .empty-container {
+    height: 12rem;
+    padding: 1rem;
   }
 
   .header-title {
@@ -182,4 +271,37 @@ $header-bg: #5882aa;
 
 .status-danger {
   color: $danger-color;
+}
+
+/* 自定义返回按钮 */
+.back-button {
+  background-color: $primary-color;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background-color: darken($primary-color, 10%);
+  }
+}
+
+/* 空状态和加载状态样式优化 */
+.ant-empty {
+  margin: 32px 0;
+}
+
+.ant-spin-container,
+.ant-spin-nested-loading {
+  height: 100%;
+}
+
+/* 地图和货架容器 */
+.map-container,
+.shelves-container {
+  width: 100%;
+  height: 100%;
 }

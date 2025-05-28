@@ -4,8 +4,9 @@ import { SearchOutlined } from '@ant-design/icons';
 import { WarehouseItem } from '../types/warehouse';
 import ItemsDetail from './ItemsDetail';
 
-// 导入auth服务
+// 导入auth服务和findLocationByRealId函数
 import authService from '../services/api/auth';
+import { findLocationByRealId } from '../services/api';
 
 // 搜索结果接口
 export interface SearchResultInfo {
@@ -91,11 +92,53 @@ const Search: React.FC<SearchProps> = ({ warehouseId, onSearchResult }) => {
         let layerId = '';
         let positionId = '';
         let locationInfo = '';
+        let warehouseId = '';
 
-        // 第二步：如果有库位ID，通过仓库货架库位的请求服务端方法获取库位信息
+        // 使用findLocationByRealId函数查找库位信息
         if (locationId) {
           try {
-            console.log('步骤2: 开始查询库位信息，库位ID:', locationId);
+            console.log('步骤2: 使用findLocationByRealId查询库位信息，库位ID:', locationId);
+
+            const locationResult = await findLocationByRealId(locationId);
+            console.log('步骤2: findLocationByRealId返回结果:', locationResult);
+
+            if (locationResult.found) {
+              // 从locationResult获取库位信息
+              warehouseId = locationResult.warehouseId || '';
+              shelfId = locationResult.shelfId || '';
+              layerId = locationResult.layerId || '';
+              positionId = locationResult.positionId || '';
+              locationInfo = locationResult.locationCode || '';
+
+              // 设置仓库名称
+              warehouseName = warehouseId === 'warehouse1' ? '公物仓一' : '公物仓二';
+
+              console.log('步骤2: 库位信息查找成功:', {
+                warehouseId, warehouseName, shelfId, layerId, positionId, locationInfo
+              });
+            } else {
+              console.log('步骤2: 未找到匹配的库位信息，尝试使用原始方法');
+
+              // 如果findLocationByRealId未找到结果，回退到原始方法
+              await fetchLocationInfoUsingOriginalMethod(locationId);
+            }
+          } catch (error) {
+            console.error('步骤2: findLocationByRealId查询出错:', error);
+
+            // 出错时回退到原始方法
+            await fetchLocationInfoUsingOriginalMethod(locationId);
+          }
+        } else {
+          console.log('步骤1: 未找到库位ID，尝试使用原始方法');
+
+          // 如果没有找到库位ID，尝试使用原始方法
+          await fetchLocationInfoUsingOriginalMethod(locationId);
+        }
+
+        // 原始方法获取库位信息的函数
+        async function fetchLocationInfoUsingOriginalMethod(locationId: string) {
+          try {
+            console.log('步骤2: 开始使用原始方法查询库位信息');
 
             // 使用 warehouseRequest 方法获取库位信息
             const locationResult = await authService.warehouseRequest('Collection', 'Load', {
@@ -320,8 +363,10 @@ const Search: React.FC<SearchProps> = ({ warehouseId, onSearchResult }) => {
                     // 根据区域确定仓库
                     if (['AQ', 'BQ', 'CQ', 'DQ'].includes(area)) {
                       warehouseName = '公物仓一';
+                      warehouseId = 'warehouse1';
                     } else if (['EQ', 'FQ'].includes(area)) {
                       warehouseName = '公物仓二';
+                      warehouseId = 'warehouse2';
                     }
 
                     // 构建货架ID
@@ -342,7 +387,7 @@ const Search: React.FC<SearchProps> = ({ warehouseId, onSearchResult }) => {
                     positionId = `${layerId}-P${position}`;
 
                     console.log('步骤3: 解析库位信息成功:', {
-                      warehouseName, shelfId, layerId, positionId, locationInfo
+                      warehouseName, warehouseId, shelfId, layerId, positionId, locationInfo
                     });
                   } else {
                     console.warn('步骤3: 库位信息格式不正确，无法解析:', locationInfo);
@@ -359,8 +404,6 @@ const Search: React.FC<SearchProps> = ({ warehouseId, onSearchResult }) => {
           } catch (error) {
             console.error('步骤2/3: 获取或解析库位信息失败:', error);
           }
-        } else {
-          console.log('步骤1: 未找到库位ID，无法继续步骤2和3');
         }
 
         // 如果没有从T710063228176306177获取到库位信息，尝试从其他字段获取
@@ -395,9 +438,10 @@ const Search: React.FC<SearchProps> = ({ warehouseId, onSearchResult }) => {
         // name: 物品名称
         // T527635558076391424: 取得日期
         // T527635705355182080: 卡片编码
+        // T527635710128300032: 物品名称（新增）
         const item: WarehouseItem = {
           id: cardData.id || cardData._id || cardData.thingId || '',
-          name: cardData.name || cardData.thingName || '未命名物品', // 物品名称
+          name: cardData.T527635710128300032 || cardData.name || cardData.thingName || '未命名物品', // 优先使用T527635710128300032字段作为物品名称
           shelfId: shelfId,
           layerId: layerId,
           positionId: positionId,
@@ -405,7 +449,9 @@ const Search: React.FC<SearchProps> = ({ warehouseId, onSearchResult }) => {
           sku: cardData.T527635705355182080 || cardData.cardCode || cardCode, // 卡片编码
           category: cardData.category || cardData.type || cardData.thingType || '未分类',
           status: cardData.status || 'normal',
-          expiryDate: cardData.T527635558076391424 || cardData.acquireDate || '' // 取得日期
+          expiryDate: cardData.T527635558076391424 || cardData.acquireDate || '', // 取得日期
+          realLocationId: locationId, // 添加真实库位ID
+          locationCode: locationInfo // 添加库位编号
         };
 
         console.log('最终构建的物品数据:', item);
@@ -416,7 +462,7 @@ const Search: React.FC<SearchProps> = ({ warehouseId, onSearchResult }) => {
           shelfId: item.shelfId,
           layerId: item.layerId,
           positionId: item.positionId,
-          warehouseId: warehouseName || warehouseId,
+          warehouseId: warehouseId || warehouseId,
           locationInfo: locationInfo // 添加原始库位信息以便ItemsDetail使用
         };
 
@@ -539,14 +585,14 @@ const Search: React.FC<SearchProps> = ({ warehouseId, onSearchResult }) => {
                   (点击顶部"仓库地图"按钮可返回仓库视图)
                 </span>
               </div>
-              <ItemsDetail
-                warehouseId={searchResult.warehouseId || warehouseId}
-                selectedShelfId={searchResult.shelfId || null}
-                selectedLayerId={searchResult.layerId || null}
-                selectedPositionId={searchResult.positionId || null}
-                searchItem={searchResult.item}
+            <ItemsDetail
+              warehouseId={searchResult.warehouseId || warehouseId}
+              selectedShelfId={searchResult.shelfId || null}
+              selectedLayerId={searchResult.layerId || null}
+              selectedPositionId={searchResult.positionId || null}
+              searchItem={searchResult.item}
                 locationInfo={searchResult.locationInfo}
-              />
+            />
             </>
           ) : (
             <div style={{ textAlign: 'center', padding: '20px' }}>

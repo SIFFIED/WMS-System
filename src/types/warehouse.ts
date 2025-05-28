@@ -2,6 +2,7 @@ export interface ShelfPosition {
   id: string;
   name: string;
   hasItems?: boolean;
+  realId?: string; // 真实库位ID
 }
 
 export interface Shelf {
@@ -33,6 +34,9 @@ export interface WarehouseItem {
   expiryDate?: string;
   category?: string;
   status?: 'normal' | 'warning' | 'danger';
+  realLocationId?: string; // 真实库位ID
+  locationCode?: string; // 库位编号，如 AQ_HJ_001_1_1
+  originalData?: any; // 添加原始数据属性，用于保存后端返回的完整数据
 }
 
 export interface WarehouseMap {

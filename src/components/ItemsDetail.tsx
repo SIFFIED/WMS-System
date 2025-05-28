@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Card, Tag, Empty, Descriptions } from 'antd';
+import { Table, Card, Tag, Empty, Descriptions, Typography } from 'antd';
 import { WarehouseItem } from '../types/warehouse';
 import { fetchPositionItems, fetchWarehouseList } from '../services/api';
+
+const { Text } = Typography;
 
 interface ItemsDetailProps {
   warehouseId: string;
@@ -10,6 +12,7 @@ interface ItemsDetailProps {
   selectedPositionId: string | null;
   searchItem?: WarehouseItem;
   locationInfo?: string; // 添加库位原始信息
+  refreshKey?: number; // 添加刷新键
 }
 
 const ItemsDetail: React.FC<ItemsDetailProps> = ({
@@ -18,7 +21,8 @@ const ItemsDetail: React.FC<ItemsDetailProps> = ({
   selectedLayerId,
   selectedPositionId,
   searchItem,
-  locationInfo
+  locationInfo,
+  refreshKey
 }) => {
   const [items, setItems] = useState<WarehouseItem[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -36,7 +40,8 @@ const ItemsDetail: React.FC<ItemsDetailProps> = ({
     selectedLayerId,
     selectedPositionId,
     searchItem,
-    locationInfo
+    locationInfo,
+    refreshKey
   });
 
   // 添加调试输出，显示当前状态
@@ -125,10 +130,14 @@ const ItemsDetail: React.FC<ItemsDetailProps> = ({
   useEffect(() => {
     const getWarehouseName = async () => {
       try {
+        console.log('ItemsDetail - 获取仓库名称:', warehouseId);
         const warehouses = await fetchWarehouseList();
         const warehouse = warehouses.find(w => w.id === warehouseId);
         if (warehouse) {
+          console.log('找到仓库名称:', warehouse.name);
           setWarehouseName(warehouse.name);
+        } else {
+          console.log('未找到仓库名称, 使用默认值');
         }
       } catch (error) {
         console.error('获取仓库名称失败:', error);
@@ -136,7 +145,7 @@ const ItemsDetail: React.FC<ItemsDetailProps> = ({
     };
 
     getWarehouseName();
-  }, [warehouseId]);
+  }, [warehouseId, refreshKey]);  // 添加refreshKey作为依赖项
 
   useEffect(() => {
     console.log('ItemsDetail 处理数据 - searchItem:', searchItem);
@@ -156,6 +165,9 @@ const ItemsDetail: React.FC<ItemsDetailProps> = ({
     const loadItems = async () => {
       setLoading(true);
       try {
+        console.log('ItemsDetail - 加载物品数据:', {
+          warehouseId, selectedShelfId, selectedLayerId, selectedPositionId, refreshKey
+        });
         const data = await fetchPositionItems(
           warehouseId,
           selectedShelfId,
@@ -166,13 +178,14 @@ const ItemsDetail: React.FC<ItemsDetailProps> = ({
         setItems(data);
       } catch (error) {
         console.error('加载物品数据失败:', error);
+        setItems([]); // 加载失败时设置为空数组，避免显示旧数据
       } finally {
         setLoading(false);
       }
     };
 
     loadItems();
-  }, [warehouseId, selectedShelfId, selectedLayerId, selectedPositionId, searchItem]);
+  }, [warehouseId, selectedShelfId, selectedLayerId, selectedPositionId, searchItem, refreshKey]); // 添加refreshKey作为依赖项
 
   const getStatusTag = (status?: string) => {
     switch (status) {
@@ -219,7 +232,7 @@ const ItemsDetail: React.FC<ItemsDetailProps> = ({
       key: 'status',
       dataIndex: 'status',
       render: (status: string) => getStatusTag(status),
-    },
+    }
   ];
 
   const renderPositionInfo = () => {
@@ -243,6 +256,14 @@ const ItemsDetail: React.FC<ItemsDetailProps> = ({
             <Descriptions.Item label="货架层数">第{parsedLocationInfo.layer}层</Descriptions.Item>
             <Descriptions.Item label="库位编号">{parsedLocationInfo.position}号库位</Descriptions.Item>
             <Descriptions.Item label="物品数量">1项</Descriptions.Item>
+            <Descriptions.Item label="库位ID">
+              {searchItem.realLocationId ? (
+                <Text copyable>{searchItem.realLocationId}</Text>
+              ) : '-'}
+            </Descriptions.Item>
+            <Descriptions.Item label="库位编码">
+              {searchItem.locationCode || locationInfo || '-'}
+            </Descriptions.Item>
           </Descriptions>
         );
       }
@@ -291,6 +312,14 @@ const ItemsDetail: React.FC<ItemsDetailProps> = ({
           <Descriptions.Item label="货架层数">第{layerNumber}层</Descriptions.Item>
           <Descriptions.Item label="库位编号">{positionNumber}号库位</Descriptions.Item>
           <Descriptions.Item label="物品数量">1项</Descriptions.Item>
+          <Descriptions.Item label="库位ID">
+            {searchItem.realLocationId ? (
+              <Text copyable>{searchItem.realLocationId}</Text>
+            ) : '-'}
+          </Descriptions.Item>
+          <Descriptions.Item label="库位编码">
+            {searchItem.locationCode || locationInfo || '-'}
+          </Descriptions.Item>
         </Descriptions>
       );
     }
@@ -331,6 +360,11 @@ const ItemsDetail: React.FC<ItemsDetailProps> = ({
       itemsCount: items.length
     });
 
+    // 查找第一个物品，获取库位ID和编码
+    const firstItem = items.length > 0 ? items[0] : null;
+    const realLocationId = firstItem?.realLocationId || '';
+    const locationCode = firstItem?.locationCode || '';
+
     return (
       <Descriptions title="库位物品详情" bordered size="small" className="position-info">
         <Descriptions.Item label="所在仓库">{warehouseName || '未知仓库'}</Descriptions.Item>
@@ -338,6 +372,12 @@ const ItemsDetail: React.FC<ItemsDetailProps> = ({
         <Descriptions.Item label="货架层数">第{layerNumber}层</Descriptions.Item>
         <Descriptions.Item label="库位编号">{positionNumber}号库位</Descriptions.Item>
         <Descriptions.Item label="物品数量">{items.length}项</Descriptions.Item>
+        <Descriptions.Item label="库位ID">
+          {realLocationId ? <Text copyable>{realLocationId}</Text> : '-'}
+        </Descriptions.Item>
+        <Descriptions.Item label="库位编码">
+          {locationCode || '-'}
+        </Descriptions.Item>
       </Descriptions>
     );
   };

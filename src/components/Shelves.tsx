@@ -120,7 +120,7 @@ const Shelves: React.FC<ShelvesProps> = ({ warehouseId, shelfId, onPositionClick
             .attr('text-anchor', 'middle')
             .attr('dominant-baseline', 'middle')
             .attr('font-weight', 'bold')
-            .text(`层${4 - layerIndex}`);
+            .text(`层${layerIndex + 1}`);
 
           // 绘制每个层的位置
           layer.positions.forEach((position, posIndex) => {

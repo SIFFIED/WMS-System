@@ -1,4 +1,5 @@
 /* 变量定义 */
+@use "sass:color";
 $primary-color: #1890ff;
 $warning-color: #faad14;
 $danger-color: #ff4d4f;
@@ -62,7 +63,7 @@ $header-bg: #5882aa;
     transition: background-color 0.3s;
 
     &:hover {
-      background-color: darken($primary-color, 10%);
+      background-color: color.adjust($primary-color, $lightness: -10%);
     }
   }
 }
@@ -101,7 +102,7 @@ $header-bg: #5882aa;
     transition: background-color 0.3s;
 
     &:hover {
-      background-color: darken($primary-color, 10%);
+      background-color: color.adjust($primary-color, $lightness: -10%);
     }
   }
 }
@@ -285,7 +286,7 @@ $header-bg: #5882aa;
   transition: all 0.3s ease;
 
   &:hover {
-    background-color: darken($primary-color, 10%);
+    background-color: color.adjust($primary-color, $lightness: -10%);
   }
 }
 

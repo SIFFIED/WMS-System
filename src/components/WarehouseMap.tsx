@@ -673,7 +673,7 @@ const WarehouseMap: React.FC<WarehouseMapProps> = ({ warehouseId, onShelfClick, 
 
   if (error) {
     return (
-      <div className="error-container">
+      <div className="error-container tech-error-container">
         <h3>加载仓库数据失败</h3>
         <p>请尝试刷新页面或稍后重试</p>
       </div>
@@ -681,11 +681,11 @@ const WarehouseMap: React.FC<WarehouseMapProps> = ({ warehouseId, onShelfClick, 
   }
 
   if (loading) {
-    return <div className="loading-container">加载中...</div>;
+    return <div className="loading-container tech-loading">加载中...</div>;
   }
 
   return (
-    <div className="warehouse-map-container">
+    <div className="warehouse-map-container tech-map-container">
       <svg
         ref={svgRef}
         width="100%"

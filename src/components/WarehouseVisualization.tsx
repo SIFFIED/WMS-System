@@ -5,7 +5,7 @@ import Shelves from './Shelves';
 import ItemsDetail from './ItemsDetail';
 import Search, { SearchResultInfo } from './Search';
 import { fetchWarehouseList, refreshItemsData, fetchWarehouseMap } from '../services/api';
-import { AppstoreOutlined, SearchOutlined, DatabaseOutlined, UserOutlined, LogoutOutlined, SyncOutlined } from '@ant-design/icons';
+import { AppstoreOutlined, SearchOutlined, DatabaseOutlined, UserOutlined, LogoutOutlined, SyncOutlined, FullscreenOutlined, FullscreenExitOutlined, ShopOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -61,6 +61,7 @@ const WarehouseVisualization: React.FC = () => {
   const [warehouseData, setWarehouseData] = useState<any>(null);
   const [mapError, setMapError] = useState<boolean>(false);
   const [shelvesError, setShelvesError] = useState<boolean>(false);
+  const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
 
   // 获取仓库列表
   useEffect(() => {
@@ -284,6 +285,60 @@ const WarehouseVisualization: React.FC = () => {
     }
   };
 
+  // 处理全屏切换
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().then(() => {
+        setIsFullscreen(true);
+      }).catch(err => {
+        message.error('全屏模式启动失败: ' + err.message);
+      });
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen().then(() => {
+          setIsFullscreen(false);
+        }).catch(err => {
+          message.error('退出全屏模式失败: ' + err.message);
+        });
+      }
+    }
+  };
+
+  // 监听全屏状态变化
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    };
+  }, []);
+
+  // 添加简单的样式来移除整页的垂直滚动条
+  useEffect(() => {
+    // 创建简单的样式元素
+    const styleElement = document.createElement('style');
+    styleElement.textContent = `
+      /* 移除整个页面的垂直滚动条 */
+      body {
+        overflow-y: hidden;
+      }
+      
+      /* 保留内部容器的滚动功能 */
+      .content-container {
+        overflow-y: auto;
+      }
+    `;
+    document.head.appendChild(styleElement);
+
+    // 组件卸载时移除样式
+    return () => {
+      document.head.removeChild(styleElement);
+    };
+  }, []);
+
   // 渲染内容区域
   const renderContent = () => {
     if (activeTab === 'map') {
@@ -399,8 +454,18 @@ const WarehouseVisualization: React.FC = () => {
       );
     } else if (activeTab === 'search') {
       return (
-        <div className="warehouse-grid search-grid">
-          <div className="warehouse-search-section">
+        <div className="warehouse-grid search-grid tech-grid" style={{
+          width: '100%',
+          maxWidth: '100%',
+          height: 'calc(100vh - 64px - 20px)', // 减少20px高度，使下方向上移动
+          overflow: 'hidden',
+          marginBottom: '20px' // 添加下方边距
+        }}>
+          <div className="warehouse-search-section tech-card" style={{
+            width: '100%',
+            height: '100%',
+            overflow: 'hidden'
+          }}>
             <Search
               warehouseId={selectedWarehouseId}
               onSearchResult={handleSearchResult}
@@ -414,45 +479,63 @@ const WarehouseVisualization: React.FC = () => {
   };
 
   return (
-    <Layout className="min-h-screen">
-      <Header className="header-container">
-        <div className="nav-container">
-          <div className="logo-title">
-            <Title level={3} className="header-title">仓储管理可视化系统</Title>
+    <Layout className="min-h-screen tech-layout">
+      <Header className="header-container tech-header">
+        <div className="nav-container tech-nav">
+          <div className="left-section" style={{ display: 'flex', alignItems: 'center' }}>
+            <Menu
+              mode="horizontal"
+              selectedKeys={[activeTab]}
+              onClick={({ key }) => handleNavChange(key)}
+              theme="dark"
+              className="main-nav tech-menu aligned-menu"
+            >
+              <Menu.Item key="map" icon={refreshing ? <SyncOutlined spin className="tech-icon" /> : <AppstoreOutlined className="tech-icon" />}>
+                {refreshing ? '正在刷新...' : '仓库地图'}
+              </Menu.Item>
+              <Menu.Item key="search" icon={<SearchOutlined className="tech-icon" />}>
+                物品搜索
+              </Menu.Item>
+            </Menu>
           </div>
 
-          <Menu
-            mode="horizontal"
-            selectedKeys={[activeTab]}
-            onClick={({ key }) => handleNavChange(key)}
-            theme="dark"
-            className="main-nav"
-          >
-            <Menu.Item key="map" icon={refreshing ? <SyncOutlined spin /> : <AppstoreOutlined />}>
-              {refreshing ? '正在刷新...' : '仓库地图'}
-            </Menu.Item>
-            <Menu.Item key="search" icon={<SearchOutlined />}>
-              物品搜索
-            </Menu.Item>
-          </Menu>
+          <div className="center-section" style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
+            <div className="tech-logo">
+              <ShopOutlined className="tech-logo-icon" />
+              <Title level={3} className="header-title">公物仓仓储管理系统</Title>
+            </div>
+          </div>
 
-          <div className="right-controls">
-            <div className="warehouse-selector">
+          <div className="right-controls" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div className="warehouse-selector tech-selector" style={{ background: 'transparent', border: 'none', boxShadow: 'none' }}>
               <Space>
-                <DatabaseOutlined style={{ color: 'white', fontSize: '16px' }} />
-                <span style={{ color: 'white' }}>选择仓库：</span>
+                <DatabaseOutlined className="tech-icon-light" />
+                <span className="tech-label" style={{ color: '#fff' }}>选择仓库：</span>
                 <Select
+                  className="tech-select"
                   style={{ width: 150 }}
                   value={selectedWarehouseId}
                   onChange={handleWarehouseChange}
                   loading={loading}
                 >
                   {warehouseOptions.map(warehouse => (
-                    <Option key={warehouse.id} value={warehouse.id}>{warehouse.name}</Option>
+                    <Option
+                      key={warehouse.id}
+                      value={warehouse.id}
+                    >{warehouse.name}</Option>
                   ))}
                 </Select>
               </Space>
             </div>
+
+            <Button
+              type="text"
+              icon={isFullscreen ? <FullscreenExitOutlined style={{ color: '#fff' }} /> : <FullscreenOutlined style={{ color: '#fff' }} />}
+              onClick={toggleFullscreen}
+              className="fullscreen-btn tech-btn"
+              title={isFullscreen ? "退出全屏" : "全屏显示"}
+              style={{ background: 'transparent', border: 'none', boxShadow: 'none' }}
+            />
 
             <div className="user-info">
               <Dropdown menu={{
@@ -465,12 +548,13 @@ const WarehouseVisualization: React.FC = () => {
                   }
                 ]
               }} placement="bottomRight">
-                <div className="user-avatar-container">
+                <div className="user-avatar-container tech-user" style={{ background: 'transparent', border: 'none', boxShadow: 'none' }}>
                   <Avatar
+                    className="tech-avatar"
                     style={{ backgroundColor: '#1890ff' }}
                     icon={<UserOutlined />}
                   />
-                  <span className="username">{user?.username || '用户'}</span>
+                  <span className="username tech-username" style={{ color: '#fff' }}>{user?.username || '用户'}</span>
                 </div>
               </Dropdown>
             </div>

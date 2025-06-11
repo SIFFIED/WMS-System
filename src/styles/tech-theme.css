@@ -1,0 +1,358 @@
+/* 科技感整体界面样式 */
+
+/* 科技感颜色变量 */
+:root {
+  --tech-primary: #1890ff;
+  --tech-secondary: #0050b3;
+  --tech-accent: #40a9ff;
+  --tech-dark: #001529;
+  --tech-light: #e6f7ff;
+  --tech-glow: rgba(24, 144, 255, 0.5);
+  --tech-bg: #030b17;
+  --tech-bg-light: #0c1f3a;
+  --tech-grid: rgba(24, 144, 255, 0.1);
+  --tech-border: rgba(64, 169, 255, 0.3);
+}
+
+/* 整体背景样式 */
+.tech-layout {
+  background: var(--tech-bg);
+  background-image:
+    linear-gradient(rgba(24, 144, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(24, 144, 255, 0.03) 1px, transparent 1px);
+  background-size: 20px 20px;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* 内容区域科技感样式 */
+.tech-content {
+  padding: 24px;
+  background: var(--tech-bg);
+  position: relative;
+}
+
+/* 科技感卡片样式 */
+.tech-card {
+  background: var(--tech-bg-light);
+  border-radius: 8px;
+  border: 1px solid var(--tech-border);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), 0 0 15px rgba(24, 144, 255, 0.1);
+  overflow: hidden;
+  position: relative;
+}
+
+.tech-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--tech-accent), transparent);
+  z-index: 1;
+}
+
+.tech-card:hover {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2), 0 0 20px rgba(24, 144, 255, 0.2);
+}
+
+/* 科技感标题 */
+.tech-title {
+  color: var(--tech-light) !important;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  text-shadow: 0 0 5px var(--tech-glow);
+  margin-bottom: 20px;
+  position: relative;
+  display: inline-block;
+}
+
+.tech-title::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--tech-accent), transparent);
+}
+
+/* 科技感文本 */
+.tech-text {
+  color: var(--tech-light);
+}
+
+/* 科技感表格 */
+.tech-table {
+  background: rgba(0, 21, 41, 0.5);
+}
+
+.tech-table .ant-table {
+  background: transparent;
+}
+
+.tech-table .ant-table-thead>tr>th {
+  background: rgba(0, 21, 41, 0.8);
+  color: var(--tech-accent);
+  border-bottom: 1px solid var(--tech-border);
+}
+
+.tech-table .ant-table-tbody>tr>td {
+  border-bottom: 1px solid rgba(24, 144, 255, 0.1);
+  color: var(--tech-light);
+}
+
+.tech-table .ant-table-tbody>tr:hover>td {
+  background: rgba(24, 144, 255, 0.05);
+}
+
+/* 科技感按钮 */
+.tech-button {
+  background: linear-gradient(90deg, var(--tech-secondary), var(--tech-primary));
+  border: none;
+  color: white;
+  text-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 8px rgba(24, 144, 255, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.tech-button:hover {
+  background: linear-gradient(90deg, var(--tech-primary), var(--tech-secondary));
+  box-shadow: 0 4px 12px rgba(24, 144, 255, 0.5);
+}
+
+/* 科技感输入框 */
+.tech-input .ant-input {
+  background: rgba(0, 21, 41, 0.7);
+  border: 1px solid var(--tech-border);
+  color: var(--tech-light);
+  box-shadow: 0 0 5px rgba(24, 144, 255, 0.1);
+}
+
+.tech-input .ant-input:hover,
+.tech-input .ant-input:focus {
+  border-color: var(--tech-accent);
+  box-shadow: 0 0 8px rgba(24, 144, 255, 0.2);
+}
+
+/* 科技感描述列表 */
+.tech-descriptions {
+  margin-bottom: 20px;
+  background-color: #ffffff;
+  border-radius: 4px;
+}
+
+.tech-descriptions .ant-descriptions-title {
+  color: var(--tech-accent) !important;
+  text-shadow: 0 0 5px var(--tech-glow);
+  font-size: 18px;
+  font-weight: 500;
+  margin-bottom: 16px;
+  border-bottom: 1px solid rgba(24, 144, 255, 0.3);
+  padding-bottom: 8px;
+}
+
+.tech-descriptions .ant-descriptions-item-label {
+  background-color: #f0f8ff !important;
+  color: #333333 !important;
+  font-weight: 500;
+  border-color: rgba(24, 144, 255, 0.3) !important;
+}
+
+.tech-descriptions .ant-descriptions-item-content {
+  background-color: #ffffff !important;
+  color: #333333 !important;
+  border-color: rgba(24, 144, 255, 0.3) !important;
+}
+
+.tech-descriptions .ant-tag {
+  background: #ffffff;
+  border: 1px solid var(--tech-accent);
+  box-shadow: 0 0 5px rgba(24, 144, 255, 0.3);
+}
+
+/* 科技感标签 */
+.tech-tag {
+  background: rgba(24, 144, 255, 0.15);
+  border: 1px solid rgba(24, 144, 255, 0.3);
+  color: var(--tech-accent);
+}
+
+/* 科技感加载状态 */
+.tech-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  min-height: 200px;
+}
+
+.tech-loading .ant-spin-dot-item {
+  background-color: var(--tech-accent);
+}
+
+/* 科技感网格布局 */
+.tech-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+  height: 100%;
+}
+
+/* 科技感地图容器 */
+.tech-map-container {
+  position: relative;
+  border-radius: 8px;
+  border: 1px solid var(--tech-border);
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), 0 0 15px rgba(24, 144, 255, 0.1);
+}
+
+.tech-map-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--tech-accent), transparent);
+  z-index: 1;
+}
+
+/* 科技感滚动条 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 21, 41, 0.5);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(24, 144, 255, 0.5);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(24, 144, 255, 0.7);
+}
+
+/* 科技感错误容器 */
+.tech-error-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 20rem;
+  background-color: rgba(255, 77, 79, 0.05);
+  border: 1px solid rgba(255, 77, 79, 0.3);
+  border-radius: 8px;
+  padding: 2rem;
+  text-align: center;
+  margin: 1rem 0;
+}
+
+.tech-error-container h3 {
+  color: #ff4d4f;
+  margin-bottom: 1rem;
+  text-shadow: 0 0 5px rgba(255, 77, 79, 0.3);
+}
+
+.tech-error-container p {
+  color: rgba(255, 255, 255, 0.65);
+  margin-bottom: 1.5rem;
+}
+
+/* 科技感空状态容器 */
+.tech-empty-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 20rem;
+  background-color: rgba(24, 144, 255, 0.05);
+  border: 1px solid rgba(24, 144, 255, 0.3);
+  border-radius: 8px;
+  padding: 2rem;
+  text-align: center;
+  margin: 1rem 0;
+}
+
+.tech-empty-container h3 {
+  color: var(--tech-accent);
+  margin-bottom: 1rem;
+  text-shadow: 0 0 5px var(--tech-glow);
+}
+
+.tech-empty-container p {
+  color: rgba(255, 255, 255, 0.65);
+  margin-bottom: 1.5rem;
+}
+
+/* 科技感描述列表容器 */
+.tech-descriptions-container {
+  margin-bottom: 20px;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 0 10px rgba(24, 144, 255, 0.15);
+  border: 1px solid rgba(24, 144, 255, 0.2);
+  background-color: #ffffff;
+}
+
+/* 科技感表格内部样式 */
+.tech-table-inner {
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.tech-table-inner .ant-table-thead>tr>th {
+  background-color: #f0f8ff !important;
+  color: #333333 !important;
+  font-weight: 500;
+  border-color: rgba(24, 144, 255, 0.3) !important;
+}
+
+.tech-table-inner .ant-table-tbody>tr>td {
+  background-color: #ffffff !important;
+  color: #333333 !important;
+  border-color: rgba(24, 144, 255, 0.3) !important;
+}
+
+.tech-table-inner .ant-table-tbody>tr:hover>td {
+  background-color: #f0f8ff !important;
+  box-shadow: 0 0 8px rgba(24, 144, 255, 0.2);
+}
+
+/* 白色卡片样式 */
+.white-card {
+  background: #ffffff !important;
+  border-radius: 8px;
+  border: 1px solid rgba(24, 144, 255, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), 0 0 15px rgba(24, 144, 255, 0.1);
+  overflow: hidden;
+  position: relative;
+}
+
+.white-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--tech-accent), transparent);
+  z-index: 1;
+}
+
+.white-card .ant-card-head {
+  background-color: #f0f8ff;
+  border-bottom: 1px solid rgba(24, 144, 255, 0.3);
+}
+
+.white-card .ant-card-head-title {
+  color: #333333;
+  font-weight: 500;
+}

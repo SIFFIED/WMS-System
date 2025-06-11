@@ -39,10 +39,10 @@ const Login: React.FC = () => {
       >
         <div style={{ textAlign: 'center', marginBottom: 24 }}>
           <Title level={2} style={{ margin: '12px 0' }}>
-            仓储管理可视化系统
+            公物仓仓储管理系统
           </Title>
           <div style={{ color: '#666', fontSize: 14 }}>
-            登录系统管理您的仓库和物品
+            登录系统管理仓库和物品
           </div>
         </div>
 

@@ -326,7 +326,7 @@ class AuthService {
             ],
             options: {
               match: {
-                isDeleted: false
+                isDeleted: false,
               },
               project: {
                 archives: 0

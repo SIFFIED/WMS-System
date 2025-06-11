@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Card, Tag, Empty, Descriptions, Typography } from 'antd';
+import { Table, Card, Tag, Empty, Descriptions, Typography, Button, message } from 'antd';
 import { WarehouseItem } from '../types/warehouse';
 import { fetchPositionItems, fetchWarehouseList } from '../services/api';
+import { CopyOutlined } from '@ant-design/icons';
 
 const { Text } = Typography;
 
@@ -187,16 +188,112 @@ const ItemsDetail: React.FC<ItemsDetailProps> = ({
     loadItems();
   }, [warehouseId, selectedShelfId, selectedLayerId, selectedPositionId, searchItem, refreshKey]); // 添加refreshKey作为依赖项
 
+  // 自定义渐变色标签
   const getStatusTag = (status?: string) => {
     switch (status) {
       case 'danger':
-        return <Tag color="error">待处置</Tag>;
+        return (
+          <Tag
+            style={{
+              background: 'linear-gradient(to right, #ff4d4f, #f5222d)',
+              border: 'none',
+              color: 'white',
+              padding: '0 10px',
+              borderRadius: '12px'
+            }}
+          >
+            待处置
+          </Tag>
+        );
       case 'warning':
-        return <Tag color="warning">待检查</Tag>;
+        return (
+          <Tag
+            style={{
+              background: 'linear-gradient(to right, #faad14, #fa8c16)',
+              border: 'none',
+              color: 'white',
+              padding: '0 10px',
+              borderRadius: '12px'
+            }}
+          >
+            待检查
+          </Tag>
+        );
       case 'normal':
       default:
-        return <Tag color="success">完备</Tag>;
+        return (
+          <Tag
+            style={{
+              background: 'linear-gradient(to right, #52c41a, #389e0d)',
+              border: 'none',
+              color: 'white',
+              padding: '0 10px',
+              borderRadius: '12px'
+            }}
+          >
+            完备
+          </Tag>
+        );
     }
+  };
+
+  // 复制文本到剪贴板的函数
+  const copyToClipboard = (text: string) => {
+    // 使用现代剪贴板API
+    navigator.clipboard.writeText(text)
+      .then(() => {
+        message.success('已复制库位ID到剪贴板');
+      })
+      .catch(err => {
+        console.error('复制失败:', err);
+        message.error('复制失败，请手动复制');
+
+        // 后备方案：创建一个临时文本区域
+        try {
+          const textArea = document.createElement('textarea');
+          textArea.value = text;
+          document.body.appendChild(textArea);
+          textArea.focus();
+          textArea.select();
+          const successful = document.execCommand('copy');
+          document.body.removeChild(textArea);
+
+          if (successful) {
+            message.success('已复制库位ID到剪贴板');
+          } else {
+            message.warning('复制可能未成功，请手动复制');
+          }
+        } catch (e) {
+          console.error('后备复制方法也失败:', e);
+          message.error('复制失败，请手动复制');
+        }
+      });
+  };
+
+  // 自定义库位ID渲染器
+  const renderLocationId = (locationId: string) => {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        <span style={{ color: '#1890ff', fontWeight: 'bold', marginRight: '8px' }}>
+          {locationId}
+        </span>
+        <Button
+          type="text"
+          icon={<CopyOutlined />}
+          size="small"
+          onClick={(e) => {
+            e.stopPropagation(); // 防止点击事件冒泡
+            copyToClipboard(locationId);
+          }}
+          style={{
+            color: '#1890ff',
+            padding: '0 4px',
+            height: '22px',
+            lineHeight: '22px'
+          }}
+        />
+      </div>
+    );
   };
 
   const columns = [
@@ -219,7 +316,19 @@ const ItemsDetail: React.FC<ItemsDetailProps> = ({
       title: '类别',
       dataIndex: 'category',
       key: 'category',
-      render: (text: string) => text ? <Tag>{text}</Tag> : '-',
+      render: (text: string) => text ? (
+        <Tag
+          style={{
+            background: 'linear-gradient(to right, #1890ff, #096dd9)',
+            border: 'none',
+            color: 'white',
+            padding: '0 10px',
+            borderRadius: '12px'
+          }}
+        >
+          {text}
+        </Tag>
+      ) : '-',
     },
     {
       title: '取得日期',
@@ -250,16 +359,34 @@ const ItemsDetail: React.FC<ItemsDetailProps> = ({
         console.log('使用解析好的库位信息渲染:', parsedLocationInfo);
 
         return (
-          <Descriptions title="库位物品详情" bordered size="small" className="position-info">
+          <Descriptions
+            bordered
+            size="small"
+            className="position-info tech-descriptions"
+            labelStyle={{
+              background: 'linear-gradient(to right, rgba(24, 144, 255, 0.15), rgba(24, 144, 255, 0.05))',
+              fontWeight: 'bold',
+              padding: '8px 12px',
+              borderRight: '1px solid rgba(24, 144, 255, 0.2)'
+            }}
+            contentStyle={{
+              padding: '8px 12px',
+              background: 'linear-gradient(to right, rgba(240, 248, 255, 0.6), rgba(240, 248, 255, 0.3))'
+            }}
+            style={{
+              border: '1px solid rgba(24, 144, 255, 0.3)',
+              borderRadius: '6px',
+              overflow: 'hidden',
+              boxShadow: '0 2px 10px rgba(0, 0, 0, 0.05)'
+            }}
+          >
             <Descriptions.Item label="所在仓库">{parsedLocationInfo.warehouse}</Descriptions.Item>
             <Descriptions.Item label="货架编号">{parsedLocationInfo.shelf}</Descriptions.Item>
             <Descriptions.Item label="货架层数">第{parsedLocationInfo.layer}层</Descriptions.Item>
             <Descriptions.Item label="库位编号">{parsedLocationInfo.position}号库位</Descriptions.Item>
             <Descriptions.Item label="物品数量">1项</Descriptions.Item>
             <Descriptions.Item label="库位ID">
-              {searchItem.realLocationId ? (
-                <Text copyable>{searchItem.realLocationId}</Text>
-              ) : '-'}
+              {searchItem.realLocationId ? renderLocationId(searchItem.realLocationId) : '-'}
             </Descriptions.Item>
             <Descriptions.Item label="库位编码">
               {searchItem.locationCode || locationInfo || '-'}
@@ -306,16 +433,34 @@ const ItemsDetail: React.FC<ItemsDetailProps> = ({
       });
 
       return (
-        <Descriptions title="库位物品详情" bordered size="small" className="position-info">
+        <Descriptions
+          bordered
+          size="small"
+          className="position-info tech-descriptions"
+          labelStyle={{
+            background: 'linear-gradient(to right, rgba(24, 144, 255, 0.15), rgba(24, 144, 255, 0.05))',
+            fontWeight: 'bold',
+            padding: '8px 12px',
+            borderRight: '1px solid rgba(24, 144, 255, 0.2)'
+          }}
+          contentStyle={{
+            padding: '8px 12px',
+            background: 'linear-gradient(to right, rgba(240, 248, 255, 0.6), rgba(240, 248, 255, 0.3))'
+          }}
+          style={{
+            border: '1px solid rgba(24, 144, 255, 0.3)',
+            borderRadius: '6px',
+            overflow: 'hidden',
+            boxShadow: '0 2px 10px rgba(0, 0, 0, 0.05)'
+          }}
+        >
           <Descriptions.Item label="所在仓库">{displayWarehouseName}</Descriptions.Item>
           <Descriptions.Item label="货架编号">{shelfDisplay}</Descriptions.Item>
           <Descriptions.Item label="货架层数">第{layerNumber}层</Descriptions.Item>
           <Descriptions.Item label="库位编号">{positionNumber}号库位</Descriptions.Item>
           <Descriptions.Item label="物品数量">1项</Descriptions.Item>
           <Descriptions.Item label="库位ID">
-            {searchItem.realLocationId ? (
-              <Text copyable>{searchItem.realLocationId}</Text>
-            ) : '-'}
+            {searchItem.realLocationId ? renderLocationId(searchItem.realLocationId) : '-'}
           </Descriptions.Item>
           <Descriptions.Item label="库位编码">
             {searchItem.locationCode || locationInfo || '-'}
@@ -366,14 +511,34 @@ const ItemsDetail: React.FC<ItemsDetailProps> = ({
     const locationCode = firstItem?.locationCode || '';
 
     return (
-      <Descriptions title="库位物品详情" bordered size="small" className="position-info">
+      <Descriptions
+        bordered
+        size="small"
+        className="position-info tech-descriptions"
+        labelStyle={{
+          background: 'linear-gradient(to right, rgba(24, 144, 255, 0.15), rgba(24, 144, 255, 0.05))',
+          fontWeight: 'bold',
+          padding: '8px 12px',
+          borderRight: '1px solid rgba(24, 144, 255, 0.2)'
+        }}
+        contentStyle={{
+          padding: '8px 12px',
+          background: 'linear-gradient(to right, rgba(240, 248, 255, 0.6), rgba(240, 248, 255, 0.3))'
+        }}
+        style={{
+          border: '1px solid rgba(24, 144, 255, 0.3)',
+          borderRadius: '6px',
+          overflow: 'hidden',
+          boxShadow: '0 2px 10px rgba(0, 0, 0, 0.05)'
+        }}
+      >
         <Descriptions.Item label="所在仓库">{warehouseName || '未知仓库'}</Descriptions.Item>
         <Descriptions.Item label="货架编号">{displayShelfId}</Descriptions.Item>
         <Descriptions.Item label="货架层数">第{layerNumber}层</Descriptions.Item>
         <Descriptions.Item label="库位编号">{positionNumber}号库位</Descriptions.Item>
         <Descriptions.Item label="物品数量">{items.length}项</Descriptions.Item>
         <Descriptions.Item label="库位ID">
-          {realLocationId ? <Text copyable>{realLocationId}</Text> : '-'}
+          {realLocationId ? renderLocationId(realLocationId) : '-'}
         </Descriptions.Item>
         <Descriptions.Item label="库位编码">
           {locationCode || '-'}
@@ -388,28 +553,135 @@ const ItemsDetail: React.FC<ItemsDetailProps> = ({
   console.log('即将渲染的物品数据:', items);
 
   return (
-    <Card
-      title="库位物品详情"
-      className="h-full"
-    >
-      {hasContent ? (
-        <>
-          {renderPositionInfo()}
-          <div className="position-items">
-            <Table
-              rowKey="id"
-              dataSource={items}
-              columns={columns}
-              loading={loading}
-              pagination={false}
-              locale={{ emptyText: <Empty description="此库位暂无物品" /> }}
+    <div className="warehouse-details-container" style={{
+      height: '100%',
+      display: 'flex',
+      flexDirection: 'column',
+      background: 'linear-gradient(to right, rgba(24, 144, 255, 0.1), rgba(24, 144, 255, 0.05))',
+      borderRadius: '8px',
+      boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(24, 144, 255, 0.2)',
+      overflow: 'hidden',
+      position: 'relative'
+    }}>
+      {/* 添加一个额外的边框层，确保四角完美 */}
+      <div style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        borderRadius: '8px',
+        border: '1px solid rgba(24, 144, 255, 0.2)',
+        pointerEvents: 'none'
+      }} />
+
+      <div className="tech-card-header" style={{
+        background: 'linear-gradient(45deg, #1890ff, #096dd9, #0050b3)',
+        color: '#ffffff',
+        borderBottom: '1px solid rgba(24, 144, 255, 0.5)',
+        fontWeight: 'bold',
+        fontSize: '16px',
+        padding: '12px 16px',
+        position: 'relative',
+        zIndex: 1
+      }}>
+        库位物品详情
+      </div>
+      <div style={{
+        padding: '16px',
+        background: 'linear-gradient(135deg, #f0f8ff, #e6f7ff, #e6f7ff)',
+        height: 'calc(100% - 44px)', /* 减去头部高度 */
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'auto',
+        position: 'relative',
+        zIndex: 1
+      }}>
+        {hasContent ? (
+          <>
+            <div className="tech-descriptions-container" style={{ marginBottom: '16px' }}>
+              {renderPositionInfo()}
+            </div>
+            <div
+              className="position-items tech-table"
+              style={{
+                background: 'linear-gradient(to bottom, rgba(255, 255, 255, 0.95), rgba(240, 248, 255, 0.85))',
+                borderRadius: '6px',
+                padding: '10px',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+                border: '1px solid rgba(24, 144, 255, 0.15)',
+                flex: '1 1 auto',
+                display: 'flex',
+                flexDirection: 'column',
+                overflow: 'auto',
+                minHeight: '0'
+              }}
+            >
+              <Table
+                rowKey="id"
+                dataSource={items}
+                columns={columns}
+                loading={loading}
+                pagination={false}
+                locale={{ emptyText: <Empty description="此库位暂无物品" /> }}
+                className="tech-table-inner"
+                style={{ marginTop: '4px' }}
+                rowClassName={(record, index) => index % 2 === 0 ? 'item-row-even' : 'item-row-odd'}
+                onRow={(record) => ({
+                  style: {
+                    transition: 'all 0.3s',
+                    cursor: 'pointer',
+                    background: 'transparent'
+                  },
+                  onMouseEnter: (e) => {
+                    e.currentTarget.style.background = 'linear-gradient(to right, rgba(24, 144, 255, 0.1), rgba(24, 144, 255, 0.05))';
+                    e.currentTarget.style.transform = 'translateY(-1px)';
+                    e.currentTarget.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.1)';
+                  },
+                  onMouseLeave: (e) => {
+                    e.currentTarget.style.background = 'transparent';
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }
+                })}
+              />
+            </div>
+          </>
+        ) : (
+          <div
+            className="tech-empty-container"
+            style={{
+              textAlign: 'center',
+              padding: '40px 20px',
+              background: 'linear-gradient(135deg, rgba(240, 248, 255, 0.8), rgba(230, 244, 255, 0.6))',
+              borderRadius: '6px',
+              border: '1px solid rgba(24, 144, 255, 0.15)',
+              boxShadow: '0 2px 6px rgba(0, 0, 0, 0.05)',
+              flex: '1 1 auto',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+          >
+            <Empty
+              description={
+                <span style={{
+                  color: '#666',
+                  fontSize: '14px',
+                  background: 'linear-gradient(to right, #1890ff, #096dd9)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  fontWeight: 'bold'
+                }}>
+                  请选择一个库位或搜索物品查看详情
+                </span>
+              }
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
             />
           </div>
-        </>
-      ) : (
-        <Empty description="请选择一个库位或搜索物品查看详情" />
-      )}
-    </Card>
+        )}
+      </div>
+    </div>
   );
 };
 

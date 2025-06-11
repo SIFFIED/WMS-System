@@ -1,8 +1,7 @@
 import { Shelf, ShelfDetail, WarehouseItem, WarehouseMap } from '../types/warehouse';
 import authService from './api/auth'; // 直接导入已实例化的authService
 
-// 不需要再创建实例
-// const authService = new AuthService();
+
 
 // 库位编号与真实ID的映射关系
 const locationIdMapping: Record<string, string> = {

@@ -550,56 +550,173 @@ const Search: React.FC<SearchProps> = ({ warehouseId, onSearchResult }) => {
   console.log('当前渲染状态 - searchResult:', searchResult);
 
   return (
-    <div className="warehouse-search">
-      <div className="search-header">
-        <Input
-          placeholder="请输入卡片编码搜索物品"
-          value={searchValue}
-          onChange={(e) => setSearchValue(e.target.value)}
-          onPressEnter={handleSearch}
-          style={{ width: '300px' }}
-          disabled={loading}
-        />
-        <Button
-          type="primary"
-          icon={<SearchOutlined />}
-          onClick={handleSearch}
-          loading={loading}
-          style={{ marginLeft: '10px' }}
-        >
-          搜索
-        </Button>
+    <div className="warehouse-search tech-card" style={{
+      height: '100%',
+      display: 'flex',
+      flexDirection: 'column',
+      width: '100%',
+      maxWidth: '100%',
+      overflow: 'hidden',
+      background: 'linear-gradient(135deg, rgba(0, 21, 41, 0.85), rgba(0, 40, 77, 0.95))',
+      padding: '0 0 30px 0' // 底部添加一些内边距
+    }}>
+      <div className="search-header tech-section" style={{
+        padding: '20px',
+        borderBottom: '1px solid rgba(64, 169, 255, 0.3)'
+      }}>
+        <div className="search-input-container" style={{ display: 'flex', alignItems: 'center', marginBottom: '0' }}>
+          <Input
+            placeholder="请输入卡片编码搜索物品"
+            value={searchValue}
+            onChange={(e) => setSearchValue(e.target.value)}
+            onPressEnter={handleSearch}
+            style={{
+              width: '350px',
+              height: '40px',
+              borderColor: '#1890ff',
+              color: '#000000',
+              backgroundColor: '#ffffff',
+              boxShadow: '0 0 10px rgba(24, 144, 255, 0.4)'
+            }}
+            disabled={loading}
+            className="tech-input"
+            autoFocus
+            prefix={<SearchOutlined style={{ color: '#40a9ff' }} />}
+          />
+          <Button
+            type="primary"
+            icon={<SearchOutlined />}
+            onClick={handleSearch}
+            loading={loading}
+            style={{
+              marginLeft: '15px',
+              height: '40px',
+              background: 'linear-gradient(to right, #1890ff, #096dd9)',
+              borderColor: '#40a9ff',
+              boxShadow: '0 0 15px rgba(24, 144, 255, 0.4)'
+            }}
+            className="tech-button"
+          >
+            搜索
+          </Button>
+        </div>
       </div>
 
-      <div className="search-results" style={{ marginTop: '20px' }}>
+      <div className="search-results" style={{
+        flex: '1 1 auto',
+        padding: '20px',
+        position: 'relative',
+        zIndex: 1,
+        overflow: 'auto',
+        display: 'flex',
+        flexDirection: 'column',
+        maxHeight: 'calc(100% - 80px)' // 限制最大高度，防止溢出
+      }}>
         {loading ? (
-          <div style={{ textAlign: 'center', padding: '20px' }}>
-            <Spin tip="搜索中..." />
+          <div className="tech-loading" style={{
+            flex: '1',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            textAlign: 'center',
+            padding: '40px',
+            marginTop: '-30px', // 向上移动一些
+            background: 'linear-gradient(135deg, rgba(0, 34, 77, 0.7), rgba(0, 87, 178, 0.5))',
+            borderRadius: '4px',
+            border: '1px solid rgba(64, 169, 255, 0.3)'
+          }}>
+            <Spin size="large" tip="搜索中..." />
           </div>
         ) : searchResult ? (
           searchResult.found && searchResult.item ? (
-            <>
-              <div style={{ marginBottom: '10px', color: 'green' }}>
-                搜索成功，显示物品详情：
-                <span style={{ marginLeft: '10px', fontSize: '12px', color: '#666' }}>
-                  (点击顶部"仓库地图"按钮可返回仓库视图)
-                </span>
+            <div style={{ flex: '1', display: 'flex', flexDirection: 'column', marginTop: '-30px' }}>
+              <div className="tech-search-success" style={{
+                marginBottom: '15px',
+                color: '#40a9ff',
+                padding: '12px 15px',
+                background: 'linear-gradient(to right, rgba(24, 144, 255, 0.15), rgba(64, 169, 255, 0.05))',
+                borderLeft: '3px solid #40a9ff',
+                borderRadius: '2px',
+                boxShadow: '0 2px 8px rgba(0, 128, 255, 0.15)'
+              }}>
+                <div style={{ fontWeight: 'bold', fontSize: '16px' }}>搜索成功，显示物品详情：</div>
+                <div style={{ marginTop: '5px', fontSize: '13px', color: 'rgba(255, 255, 255, 0.85)' }}>
+                  点击顶部"仓库地图"按钮可返回仓库视图
+                </div>
               </div>
-            <ItemsDetail
-              warehouseId={searchResult.warehouseId || warehouseId}
-              selectedShelfId={searchResult.shelfId || null}
-              selectedLayerId={searchResult.layerId || null}
-              selectedPositionId={searchResult.positionId || null}
-              searchItem={searchResult.item}
-                locationInfo={searchResult.locationInfo}
-            />
-            </>
+              <div className="tech-detail-container" style={{
+                flex: '1',
+                background: 'linear-gradient(135deg, rgba(0, 34, 77, 0.7), rgba(0, 87, 178, 0.5))',
+                borderRadius: '4px',
+                border: '1px solid rgba(64, 169, 255, 0.3)',
+                boxShadow: '0 0 20px rgba(0, 128, 255, 0.2)'
+              }}>
+                <ItemsDetail
+                  warehouseId={searchResult.warehouseId || warehouseId}
+                  selectedShelfId={searchResult.shelfId || null}
+                  selectedLayerId={searchResult.layerId || null}
+                  selectedPositionId={searchResult.positionId || null}
+                  searchItem={searchResult.item}
+                  locationInfo={searchResult.locationInfo}
+                />
+              </div>
+            </div>
           ) : (
-            <div style={{ textAlign: 'center', padding: '20px' }}>
-              未找到匹配的物品。请尝试其他卡片编码。
+            <div className="tech-empty-container" style={{
+              flex: '1',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              alignItems: 'center',
+              textAlign: 'center',
+              padding: '40px',
+              marginTop: '-30px', // 向上移动一些
+              background: 'linear-gradient(135deg, rgba(0, 34, 77, 0.7), rgba(0, 87, 178, 0.5))',
+              borderRadius: '4px',
+              border: '1px solid rgba(64, 169, 255, 0.3)',
+              boxShadow: '0 0 15px rgba(0, 128, 255, 0.15)'
+            }}>
+              <h3 style={{ color: '#ff4d4f', marginBottom: '10px' }}>未找到匹配的物品</h3>
+              <p className="tech-text" style={{ color: 'rgba(255, 255, 255, 0.85)' }}>请检查卡片编码是否正确，或尝试其他编码</p>
             </div>
           )
-        ) : null}
+        ) : (
+          <div className="tech-welcome" style={{
+            flex: '1',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            textAlign: 'center',
+            padding: '60px 20px',
+            marginTop: '-30px', // 向上移动一些
+            background: 'linear-gradient(135deg, rgba(0, 34, 77, 0.7), rgba(0, 87, 178, 0.5))',
+            borderRadius: '4px',
+            border: '1px solid rgba(64, 169, 255, 0.3)',
+            boxShadow: '0 0 20px rgba(0, 128, 255, 0.2)',
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+            <div style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              height: '2px',
+              background: 'linear-gradient(90deg, transparent, #40a9ff, transparent)',
+              opacity: 0.7
+            }}></div>
+            <SearchOutlined style={{
+              fontSize: '48px',
+              color: '#40a9ff',
+              marginBottom: '20px',
+              opacity: 0.9,
+              textShadow: '0 0 20px rgba(24, 144, 255, 0.8)'
+            }} />
+            <h3 style={{ color: '#fff', marginBottom: '15px', fontSize: '20px', letterSpacing: '1px' }}>物品搜索</h3>
+            <p style={{ color: 'rgba(255, 255, 255, 0.85)' }}>请输入卡片编码进行搜索</p>
+          </div>
+        )}
       </div>
     </div>
   );
